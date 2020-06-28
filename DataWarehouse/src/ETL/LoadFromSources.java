@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -138,13 +139,12 @@ public class LoadFromSources {
 	     
 	}
 	public void addDownloadLog(int config_id,String file_name, String state) throws ParseException, ClassNotFoundException, SQLException {
-		LogUtils lu = new LogUtils();
-		Calendar currenttime = Calendar.getInstance();
-		Date currentDate = new Date((currenttime.getTime()).getTime());
-		Date download_timestamp = currentDate;
-		Date nonValueDate =  new Date(2060, 31, 12);
-		
-		lu.insertNewLog(config_id, file_name, state, nonValueDate, download_timestamp,
+		Timestamp download_timestamp = new Timestamp(System.currentTimeMillis()) ;
+		String value = "20901231120000";
+		SimpleDateFormat dformat = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = (Date) dformat.parse(value);
+		Timestamp nonValueDate = new Timestamp(date.getDate());
+		LogUtils.insertNewLog(config_id, file_name, state, nonValueDate, download_timestamp,
 				nonValueDate, -1, -1);
 	}
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
