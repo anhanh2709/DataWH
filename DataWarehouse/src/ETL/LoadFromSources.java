@@ -140,10 +140,9 @@ public class LoadFromSources {
 	}
 	public void addDownloadLog(int config_id,String file_name, String state) throws ParseException, ClassNotFoundException, SQLException {
 		Timestamp download_timestamp = new Timestamp(System.currentTimeMillis()) ;
-		String value = "20901231120000";
-		SimpleDateFormat dformat = new SimpleDateFormat("yyyyMMddHHmmss");
-        Date date = (Date) dformat.parse(value);
-		Timestamp nonValueDate = new Timestamp(date.getDate());
+		GregorianCalendar cal = new GregorianCalendar(2070,12,31);
+		long millis = cal.getTimeInMillis();
+		Timestamp nonValueDate = new Timestamp(millis);
 		LogUtils.insertNewLog(config_id, file_name, state, nonValueDate, download_timestamp,
 				nonValueDate, -1, -1);
 	}
