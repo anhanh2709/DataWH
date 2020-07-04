@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import com.chilkatsoft.CkGlobal;
@@ -23,6 +24,7 @@ import com.chilkatsoft.CkScp;
 import com.chilkatsoft.CkSsh;
 
 import configuration.Config;
+import mail.mailUtils;
 import util.ConfigUtils;
 import util.DBConnection;
 import util.LogUtils;
@@ -40,7 +42,8 @@ public class LoadFromSources {
 	public void DownLoad(Config config) {
 		CkSsh ssh = new CkSsh();
 		CkGlobal ck = new CkGlobal();
-		ck.UnlockBundle("Download");
+		ck.UnlockBundle("DownLoad");
+		ssh.UnlockComponent("Download");
 		String hostname = config.getSrc_url();
 		int port = 2227;
 		boolean success = ssh.Connect(hostname, port);
@@ -48,7 +51,6 @@ public class LoadFromSources {
 			System.out.println(ssh.lastErrorText());
 			return;
 		}
-
 		ssh.put_IdleTimeoutMs(5000);
 		success = ssh.AuthenticatePw(config.getSrc_user(), config.getSrc_pass());
 		if (success != true) {
@@ -115,8 +117,10 @@ public class LoadFromSources {
 				
 			}
 			else {
-				copyFileUsingStream(f.getAbsolutePath(), new File(sucDir + File.separator +f.getName()));
+				copyFileUsingStream(f.getAbsolutePath(), new File(errDir + File.separator +f.getName()));
 				addDownloadLog(config_id,f.getName(), "F");
+				mailUtils mail = new mailUtils();
+				mail.SendMail("", "Download File fail", "Downloading file: "+ f.getName() + "process has been fail");
 				f.delete();
 			}
 		}

@@ -72,8 +72,8 @@ public class LogUtils {
 		ps.setInt(4, config_id);
 		ps.close();
 	}
-	public static List<String> getConfigByState(String state) {
-		List<String> listConfig = new ArrayList<String>();
+	public static List<Integer> getConfigByState(String state) {
+		List<Integer> listConfig = new ArrayList<Integer>();
 		try {
 			
 			String sql = "Select distinct config_id from  log where state = ?";
@@ -81,7 +81,7 @@ public class LogUtils {
 			ps.setString(1, state);
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
-				listConfig.add(rs.getString("config_id"));
+				listConfig.add(rs.getInt("config_id"));
 			}
 			ps.close();
 			

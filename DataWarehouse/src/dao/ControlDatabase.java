@@ -1,11 +1,13 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import util.DBConnection;
+import connection.DBConnection;
 
 public class ControlDatabase {
 	private String config_db_name;
@@ -48,30 +50,6 @@ public class ControlDatabase {
 		this.table_name = table_name;
 	}
 
-	public String selectField(String field, String conditon) {
-		sql = "SELECT " + field + " FROM " + this.table_name + " WHERE config_name=?";
-		try {
-			pst = DBConnection.getConnection(this.config_db_name).prepareStatement(sql);
-			pst.setString(1, conditon);
-			rs = pst.executeQuery();
-			rs.next();
-			return rs.getString(field);
-		} catch (Exception e) {
-			return null;
-		} finally {
-			try {
-				if (pst != null)
-					pst.close();
-				if (rs != null)
-					rs.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-
-		}
-
-	}
-	
 	public boolean tableExist(String table_name) throws ClassNotFoundException {
 		try {
 			DatabaseMetaData dbm = DBConnection.getConnection(this.target_db_name).getMetaData();
@@ -115,14 +93,14 @@ public class ControlDatabase {
 		}
 	}
 
-	public boolean insertLog(String table, String file_status, String config_id, String timestamp,
+	public boolean insertLog(String table, String file_status, int config_id, String timestamp,
 			String stagin_load_count, String file_name) throws ClassNotFoundException {
 		sql = "INSERT INTO " + table
-				+ "(file_name,data_file_config_id,file_status,staging_load_count,file_timestamp) value (?,?,?,?,?)";
+				+ "(config_id, file_name, state, staging_timestamp, download_timestamp,transform_timestamp,staging_count, transform_count) values(?,?,?,?,?,?,?,?)";
 		try {
 			pst = DBConnection.getConnection(this.config_db_name).prepareStatement(sql);
 			pst.setString(1, file_name);
-			pst.setInt(2, Integer.parseInt(config_id));
+			pst.setInt(2, config_id);
 			pst.setString(3, file_status);
 			pst.setInt(4, Integer.parseInt(stagin_load_count));
 			pst.setString(5, timestamp);
@@ -143,9 +121,29 @@ public class ControlDatabase {
 
 		}
 	}
+	public boolean updateLog(int config_id, String file_name, String state, Date staging_timestamp) {
+		Connection connection;
+		try {
+			connection = DBConnection.getConnection("control");
+			PreparedStatement ps1 = connection.prepareStatement("UPDATE log SET active=0 WHERE file_name=?");
+			ps1.setString(1, file_name);
+			ps1.executeUpdate();
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO log (config_id, file_name, file_type, status, file_timestamp, active) value (?,?,?,?,?,1)");
+			ps.setInt(1, config_id);
+			ps.setString(2, file_name);
+			ps.setString(3, state);
+			ps.setDate(4, staging_timestamp);
+			ps.executeUpdate();
+			connection.close();
+			return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	public boolean createTable(String table_name, String variables, String column_list) throws ClassNotFoundException {
-		sql = "CREATE TABLE "+table_name+" (stt INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
+		sql = "CREATE TABLE "+table_name+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
 		String[] vari = variables.split(",");
 		String[] col = column_list.split(",");
 		for(int i =0;i<vari.length;i++) {
@@ -172,5 +170,4 @@ public class ControlDatabase {
 
 		}
 	}
-
 }

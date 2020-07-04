@@ -26,7 +26,8 @@
 	<classpathentry kind="lib" path="libs/poi-scratchpad-4.1.2.jar"/>
 	<classpathentry kind="lib" path="libs/SparseBitSet-1.2.jar"/>
 	<classpathentry kind="lib" path="libs/xmlbeans-3.1.0.jar"/>
-	<classpathentry kind="lib" path="D:/JavaPrograming/DataWarehouse/libs/mysql-connector-java-8.0.16.jar"/>
-	<classpathentry kind="lib" path="D:/JavaPrograming/DataWarehouse/libs/chilkat.jar"/>
+	<classpathentry kind="lib" path="libs/mysql-connector-java-8.0.16.jar"/>
+	<classpathentry kind="lib" path="libs/chilkat.jar"/>
+	<classpathentry kind="lib" path="libs/java-mail-1.4.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
