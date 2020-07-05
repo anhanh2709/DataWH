@@ -38,7 +38,7 @@ public class LoadFromStagingToWareHouse {
 	}
 	Timestamp nonValueDate = new Timestamp(new GregorianCalendar(1970,02,01).getTimeInMillis());
 	public void load() throws SQLException, ClassNotFoundException {
-		List<Integer> listConfig = LogUtils.getConfigByState("TR");
+		List<Integer> listConfig = LogUtils.getConfigIDByState("TR");
 //		Connection conControl = null;
 //		conControl = DBConnection.ConnectControl();
 //		Connection controlConnection = DBConnection.ConnectWareHouse();
@@ -75,7 +75,7 @@ public class LoadFromStagingToWareHouse {
 			
 	}
 	private void truncateStaging(String staging_table) throws SQLException, ClassNotFoundException {
-		controlCon = DBConnection.ConnectStaging();
+		//controlCon = DBConnection.ConnectStaging();
 		controlCon.createStatement().execute("TRUNCATE TABLE STAGING." + staging_table);
 	}
 	private void insertNewRecord(ResultSet dataFromStaging, int row, String required_columns,

@@ -6,8 +6,9 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.StringTokenizer;
 
-import connection.DBConnection;
+import util.DBConnection;
 
 public class ControlDatabase {
 	private String config_db_name;
@@ -52,14 +53,16 @@ public class ControlDatabase {
 
 	public boolean tableExist(String table_name) throws ClassNotFoundException {
 		try {
-			DatabaseMetaData dbm = DBConnection.getConnection(this.target_db_name).getMetaData();
+			DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
 			ResultSet tables = dbm.getTables(null, null, table_name, null);
 			try {
 				if (tables.next()) {
+					System.out.println(true);
 					return true;
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
+				System.out.println(false);
 				return false;
 			}
 		} catch (SQLException e) {
@@ -71,26 +74,21 @@ public class ControlDatabase {
 	}
 
 	public boolean insertValues(String column_list, String values, String target_table) throws ClassNotFoundException {
-		sql = "INSERT INTO " + target_table + "(" + column_list + ") VALUES " + values;
-		System.out.println(sql);
-		try {
-			pst = DBConnection.getConnection(this.target_db_name).prepareStatement(sql);
-			pst.executeUpdate();
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		} finally {
+		StringTokenizer stoken = new StringTokenizer(values, "|");
+		while (stoken.hasMoreElements()) {
+			sql = "INSERT INTO " + target_table + "(" + column_list + ") VALUES " +  stoken.nextToken() ;
+			System.out.println(sql);
 			try {
-				if (pst != null)
-					pst.close();
-				if (rs != null)
-					rs.close();
+				pst = DBConnection.ConnectControl().prepareStatement(sql);
+				pst.executeUpdate();
+				
 			} catch (SQLException e) {
 				e.printStackTrace();
+				return false;
 			}
-
 		}
+			return true; 
+		
 	}
 
 	public boolean insertLog(String table, String file_status, int config_id, String timestamp,
@@ -98,7 +96,7 @@ public class ControlDatabase {
 		sql = "INSERT INTO " + table
 				+ "(config_id, file_name, state, staging_timestamp, download_timestamp,transform_timestamp,staging_count, transform_count) values(?,?,?,?,?,?,?,?)";
 		try {
-			pst = DBConnection.getConnection(this.config_db_name).prepareStatement(sql);
+			pst = DBConnection.ConnectControl().prepareStatement(sql);
 			pst.setString(1, file_name);
 			pst.setInt(2, config_id);
 			pst.setString(3, file_status);
@@ -121,11 +119,11 @@ public class ControlDatabase {
 
 		}
 	}
-	public boolean updateLog(int config_id, String file_name, String state, Date staging_timestamp) {
+	public boolean updateLog(int config_id, String file_name, String state, Date staging_timestamp) throws ClassNotFoundException {
 		Connection connection;
 		try {
-			connection = DBConnection.getConnection("control");
-			PreparedStatement ps1 = connection.prepareStatement("UPDATE log SET active=0 WHERE file_name=?");
+			connection = DBConnection.ConnectControl();
+			PreparedStatement ps1 = connection.prepareStatement("UPDATE log SET active = 0 WHERE file_name=?");
 			ps1.setString(1, file_name);
 			ps1.executeUpdate();
 			PreparedStatement ps = connection.prepareStatement("INSERT INTO log (config_id, file_name, file_type, status, file_timestamp, active) value (?,?,?,?,?,1)");
@@ -143,6 +141,7 @@ public class ControlDatabase {
 	}
 
 	public boolean createTable(String table_name, String variables, String column_list) throws ClassNotFoundException {
+		System.out.println("create");
 		sql = "CREATE TABLE "+table_name+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
 		String[] vari = variables.split(",");
 		String[] col = column_list.split(",");
@@ -152,7 +151,7 @@ public class ControlDatabase {
 		sql = sql.substring(0,sql.length()-1)+")";
 		System.out.println(sql);
 		try {
-			pst = DBConnection.getConnection(this.target_db_name).prepareStatement(sql);
+			pst = DBConnection.ConnectControl().prepareStatement(sql);
 			pst.executeUpdate();
 			return true;
 		} catch (SQLException e) {
@@ -168,6 +167,13 @@ public class ControlDatabase {
 				e.printStackTrace();
 			}
 
+		}
+	}
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
+		ResultSet tables = dbm.getTables(null, null, "SinhVien", null);
+		while(tables.next()) {
+			System.out.println("???");
 		}
 	}
 }

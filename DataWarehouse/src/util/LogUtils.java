@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import configuration.Config;
+import configuration.Log;
 
 public class LogUtils {
 	static Connection con;
@@ -52,7 +53,8 @@ public class LogUtils {
 			timestampCol = "download_timestamp";
 			countCol = "staging_count";
 			break;
-		case "TR":
+		case "EX_SUC":
+		case "EX_ERR":
 			timestampCol = "staging_timestamp";
 			countCol = "staging_count";
 			break;
@@ -72,7 +74,7 @@ public class LogUtils {
 		ps.setInt(4, config_id);
 		ps.close();
 	}
-	public static List<Integer> getConfigByState(String state) {
+	public static List<Integer> getConfigIDByState(String state) {
 		List<Integer> listConfig = new ArrayList<Integer>();
 		try {
 			
@@ -87,6 +89,28 @@ public class LogUtils {
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return listConfig;
+	}
+	public static List<Log> getConfigByState(String state) {
+		List<Log> listConfig = new ArrayList<Log>();
+		try {
+			String sql = "Select * from log where state = ?";
+			PreparedStatement ps = con.prepareStatement(sql);
+			ps.setString(1, state);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				listConfig.add(new Log(rs.getInt("config_id"),
+						rs.getString("file_name"),
+						rs.getString("state"),
+						rs.getInt("staging_count"),
+						rs.getInt("transform_count")));
+			}
+			ps.close();
+			
+		} catch (SQLException e) {
+	
 			e.printStackTrace();
 		}
 		return listConfig;

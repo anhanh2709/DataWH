@@ -24,13 +24,15 @@ public final class ConfigUtils {
 			config.setDelimeter(rs.getString("delimeter"));
 			config.setImport_dir(rs.getString("import_dir"));
 			config.setSuccess_dir(rs.getString("success_dir"));
-			config.setErr_dir(rs.getString("config_id"));
+			config.setErr_dir(rs.getString("err_dir"));
 			config.setSrc_url(rs.getString("src_url"));
 			config.setSrc_path(rs.getString("src_path"));
 			config.setSrc_user(rs.getString("src_user"));
 			config.setTarget_tb(rs.getString("target_tb"));
 			config.setSrc_pass(rs.getString("src_pass"));
 			config.setFile_Mask(rs.getString("file_mask"));
+			config.setFile_type(rs.getString("file_type"));
+			config.setColumnList(rs.getString("columnList"));
 		}
 		ps.close();
 		return config;
