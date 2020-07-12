@@ -76,7 +76,7 @@ public class ControlDatabase {
 	public boolean insertValues(String column_list, String values, String target_table) throws ClassNotFoundException {
 		StringTokenizer stoken = new StringTokenizer(values, "|");
 		while (stoken.hasMoreElements()) {
-			sql = "INSERT INTO " + target_table + "(" + column_list + ") VALUES " +  stoken.nextToken() ;
+			sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " +  stoken.nextToken() ;
 			System.out.println(sql);
 			try {
 				pst = DBConnection.ConnectControl().prepareStatement(sql);
@@ -87,7 +87,7 @@ public class ControlDatabase {
 				return false;
 			}
 		}
-			return true; 
+		return true; 
 		
 	}
 

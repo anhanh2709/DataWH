@@ -67,9 +67,9 @@ public class LoadFromLocalToStaging {
 				for (Log log : listlog) {
 					//String file_name = file.getName().replaceAll("."+ file_type, "");
 					String file_name = file.getName();
-					System.out.println(log.getFile_name());
+					System.out.println("file "+ file_name);
+					System.out.println("file_log" + log.getFile_name());
 					if (file_name.equals(log.getFile_name())) {
-						System.out.println(file_name);
 						if (file_type != null) {
 							String values = "";
 							if (file_type.equals("txt")) {
@@ -101,6 +101,7 @@ public class LoadFromLocalToStaging {
 								String target_dir;
 
 								if (rf.writeDataToBD(columnList, target_tb, values)) {
+									System.out.println("trueeee");
 									state = "EX_SUC";
 									LogUtils.updateNewState(config_id, state, currentTS, Integer.parseInt(staging_count));
 									target_dir = config.getSuccess_dir();
@@ -143,7 +144,7 @@ public class LoadFromLocalToStaging {
 			e.printStackTrace();
 			return false;
 		} finally {
-			file.delete();
+			//file.delete();
 		}
 	}
 

@@ -32,7 +32,7 @@ import util.LogUtils;
 public class LoadFromSources {
 	static {
 		try {
-			System.loadLibrary("chilkat"); //copy file chilkat.dll vao thu muc project
+			System.load("D:\\DataWareHouse\\chilkat.dll"); //copy file chilkat.dll vao thu muc project
 		} catch (UnsatisfiedLinkError e) {
 			System.err.println("Native code library failed to load.\n" + e);
 			System.exit(1);
@@ -97,7 +97,6 @@ public class LoadFromSources {
 		
 	}
 	public  List<File> listFile(String dir) {
-		System.out.println(dir);
 		 File directoryPath = new File(dir);
 		 List<File> listFile = new ArrayList<File>();
 		 String[] paths = directoryPath.list();
@@ -139,8 +138,6 @@ public class LoadFromSources {
 	        }
 	        is.close();
 	        os.close();
-	       
-	     
 	}
 	public void addDownloadLog(int config_id,String file_name, String state) throws ParseException, ClassNotFoundException, SQLException {
 		Timestamp download_timestamp = new Timestamp(System.currentTimeMillis()) ;

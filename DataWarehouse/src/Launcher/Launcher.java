@@ -1,6 +1,7 @@
 package Launcher;
 
 import java.sql.SQLException;
+import java.util.Scanner;
 
 import ETL.LoadFromLocalToStaging;
 import ETL.LoadFromSources;
@@ -12,17 +13,22 @@ import util.ConfigUtils;
 
 public class Launcher {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		String cmd = args[0];
+		while(true) {
+		System.out.println("nhap lenh");
+		Scanner scanner = new Scanner(System.in);
+		String s = scanner.next();
+		String[] com = s.split("-");
+		String cmd = com[0];
 		switch (cmd) {
 		case "download":
 			 LoadFromSources lfs = new LoadFromSources();
-			 String cfgName = args[1];
+			 String cfgName = com[1];
 			 Config config = ConfigUtils.getConfig(cfgName);
 			 lfs.DownLoad(config);
 			break;
 		case "extract":
 			LoadFromLocalToStaging ls = new LoadFromLocalToStaging();
-			String cfgName2 = args[1];
+			String cfgName2 = com[1];
 			ls.setConfigName(cfgName2);
 			ReadFile rf = new ReadFile();
 			ControlDatabase cdb = new ControlDatabase();
@@ -35,7 +41,11 @@ public class Launcher {
 		case "transform":
 			LoadFromStagingToWareHouse load = new LoadFromStagingToWareHouse();
 			load.load();
+			break;
+		default:
+			System.out.println("Lenh khong ho tro");
 		}
+	}
 	}
 
 }
