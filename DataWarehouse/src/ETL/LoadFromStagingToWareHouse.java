@@ -38,7 +38,7 @@ public class LoadFromStagingToWareHouse {
 	}
 	Timestamp nonValueDate = new Timestamp(new GregorianCalendar(1970,02,01).getTimeInMillis());
 	public void load() throws SQLException, ClassNotFoundException {
-		List<Integer> listConfig = LogUtils.getConfigIDByState("TR");
+		List<Integer> listConfig = LogUtils.getConfigIDByState("EXS");
 //		Connection conControl = null;
 //		conControl = DBConnection.ConnectControl();
 //		Connection controlConnection = DBConnection.ConnectWareHouse();

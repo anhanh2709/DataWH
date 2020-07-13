@@ -53,8 +53,8 @@ public class LogUtils {
 			timestampCol = "download_timestamp";
 			countCol = "staging_count";
 			break;
-		case "EX_SUC":
-		case "EX_ERR":
+		case "EXS":
+		case "EXF":
 			timestampCol = "staging_timestamp";
 			countCol = "staging_count";
 			break;
@@ -66,12 +66,14 @@ public class LogUtils {
 			break;
 		}
 		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where config_id = ?";
+		System.out.println(sql);
 		Connection con = DBConnection.ConnectControl();
 		PreparedStatement ps = con.prepareStatement(sql);
 		ps.setString(1, state);
 		ps.setTimestamp(2, timestamp);
 		ps.setInt(3, count);
 		ps.setInt(4, config_id);
+		ps.execute();
 		ps.close();
 	}
 	public static List<Integer> getConfigIDByState(String state) {
