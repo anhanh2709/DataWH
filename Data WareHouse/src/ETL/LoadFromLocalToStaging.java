@@ -133,8 +133,8 @@ public class LoadFromLocalToStaging {
 						state = "EXF";
 						LogUtils.updateNewState(config_id, state, currentTS, Integer.parseInt(staging_count));
 					
-						mailUtils mail = new mailUtils();
-						mail.SendMail("", "Load File fail", "Load file: "+ sourceFile + "process has been fail");
+// 						mailUtils mail = new mailUtils();
+// 						mail.SendMail("", "Load File fail", "Load file: "+ sourceFile + "process has been fail");
 //						target_dir = config.getErr_dir();
 //						if (moveFile(target_dir, file))
 //							;
