@@ -1,9 +1,5 @@
 package configuration;
 
-import java.sql.SQLException;
-
-import util.ConfigUtils;
-
 public class Config {
 	private int config_id;
 	private String config_name;
@@ -141,17 +137,4 @@ public class Config {
 		this.file_Mask = file_Mask;
 	}
 
-	@Override
-	public String toString() {
-		return "Config [config_id=" + config_id + ", config_name=" + config_name + ", file_type=" + file_type
-				+ ", src_url=" + src_url + ", src_path=" + src_path + ", src_user=" + src_user + ", src_pass="
-				+ src_pass + ", import_dir=" + import_dir + ", success_dir=" + success_dir + ", err_dir=" + err_dir
-				+ ", columnList=" + columnList + ", delimeter=" + delimeter + ", dataTypes=" + dataTypes
-				+ ", target_tb=" + target_tb + ", file_Mask=" + file_Mask + "]";
-	}
-
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		Config config = ConfigUtils.getConfig("f.txt");
-		System.out.println(config.toString());
-	}
 }

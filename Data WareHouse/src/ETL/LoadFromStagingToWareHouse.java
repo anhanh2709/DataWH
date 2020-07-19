@@ -15,7 +15,7 @@ import util.LogUtils;
 
 public class LoadFromStagingToWareHouse {
 	// Chuyen du lieu tu staging den Warehouse
-	public void load(Config config) throws SQLException, ClassNotFoundException {
+	public void load() throws SQLException, ClassNotFoundException {
 		List<Log> listConfig = LogUtils.getConfigByState("ESUC");
 		Connection conControl = null;
 		conControl = DBConnection.ConnectControl();
@@ -68,7 +68,7 @@ public class LoadFromStagingToWareHouse {
 			}
 			//Thay doi trang thai log cua tat ca cac file trong config
 			Timestamp transform_timestamp = new Timestamp(System.currentTimeMillis());
-			LogUtils.updateNewState(config.getConfig_id(), "SUC", transform_timestamp, insertedRecordCount);
+			LogUtils.updateNewState(listConfig.get(i).getConfig_id(), "SUC", transform_timestamp, insertedRecordCount);
 			//Truncate table trong staging
 			conStaging.createStatement().execute("TRUNCATE TABLE " + staging_table);
 		}

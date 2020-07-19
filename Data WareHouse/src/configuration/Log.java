@@ -3,6 +3,7 @@ package configuration;
 import java.sql.Timestamp;
 
 public class Log {
+	private int log_id;
 	private int config_id;
 	private String file_name;
 	private String state;
@@ -12,16 +13,26 @@ public class Log {
 	private int staging_count;
 	private int transform_count;
 
-	public Log() {
-
-	}
-
-	public Log(int config_id, String file_name, String state, int staging_count, int transform_count) {
+	public Log(int log_id, int config_id, String file_name, String state, int staging_count, int transform_count) {
+		this.log_id = log_id;
 		this.config_id = config_id;
 		this.file_name = file_name;
 		this.state = state;
 		this.staging_count = staging_count;
 		this.transform_count = transform_count;
+	}
+	
+
+	public Log() {
+
+	}
+
+	public int getLog_id() {
+		return log_id;
+	}
+
+	public void setLog_id(int log_id) {
+		this.log_id = log_id;
 	}
 
 	public int getConfig_id() {
@@ -87,5 +98,17 @@ public class Log {
 	public void setTransform_count(int transform_count) {
 		this.transform_count = transform_count;
 	}
+
+	
+
+	@Override
+	public String toString() {
+		return "Log [log_id=" + log_id + ", config_id=" + config_id + ", file_name=" + file_name + ", state=" + state
+				+ ", staging_timestamp=" + staging_timestamp + ", download_timestamp=" + download_timestamp
+				+ ", transform_timestamp=" + transform_timestamp + ", staging_count=" + staging_count
+				+ ", transform_count=" + transform_count + "]";
+	}
+	
+	
 
 }

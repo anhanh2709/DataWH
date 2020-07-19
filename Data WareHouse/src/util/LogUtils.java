@@ -1,6 +1,7 @@
 package util;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,7 +53,8 @@ public class LogUtils {
 			timestampCol = "download_timestamp";
 			countCol = "staging_count";
 			break;
-		case "TR":
+		case "EXS":
+		case "EXF":
 			timestampCol = "staging_timestamp";
 			countCol = "staging_count";
 			break;
@@ -64,16 +66,18 @@ public class LogUtils {
 			break;
 		}
 		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where config_id = ?";
+		System.out.println(sql);
 		Connection con = DBConnection.ConnectControl();
 		PreparedStatement ps = con.prepareStatement(sql);
 		ps.setString(1, state);
 		ps.setTimestamp(2, timestamp);
 		ps.setInt(3, count);
 		ps.setInt(4, config_id);
+		ps.execute();
 		ps.close();
 	}
-	public static List<Log> getConfigByState(String state) {
-		List<Log> listConfig = new ArrayList<Log>();
+	public static List<Integer> getConfigIDByState(String state) {
+		List<Integer> listConfig = new ArrayList<Integer>();
 		try {
 			
 			String sql = "Select distinct config_id from  log where state = ?";
@@ -81,11 +85,35 @@ public class LogUtils {
 			ps.setString(1, state);
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
-				listConfig.add(new Log(rs.getInt("config_id"),
-						rs.getString("file_name"),
-						rs.getString("state"),
-						rs.getInt("staging_count"),
-						rs.getInt("transform_count")));
+				listConfig.add(rs.getInt("config_id"));
+			}
+			ps.close();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return listConfig;
+	}
+	
+	
+	public static Log getConfigByState(String state) {
+//		List<Log> listConfig = new ArrayList<Log>();
+		Log log = new Log();
+		try {
+			String sql = "Select * from log where state = ?";
+			PreparedStatement ps = con.prepareStatement(sql);
+			ps.setString(1, state);
+			ResultSet rs = ps.executeQuery();
+			rs.last();
+			if(rs.getRow()>=1) {
+				rs.first();
+				log.setLog_id(rs.getInt("log_id"));
+				log.setConfig_id(rs.getInt("config_id"));
+				log.setFile_name(rs.getString("file_name"));
+				log.setState(rs.getString("state"));
+				log.setStaging_count(rs.getInt("staging_count"));
+				log.setTransform_count(rs.getInt("transform_count"));
 			}
 			ps.close();
 			
@@ -93,7 +121,11 @@ public class LogUtils {
 	
 			e.printStackTrace();
 		}
-		return listConfig;
+		return log;
+	}
+	public static void main(String[] args) {
+		LogUtils l = new LogUtils();
+		System.out.println(l.getConfigByState("ER"));
 	}
 
 

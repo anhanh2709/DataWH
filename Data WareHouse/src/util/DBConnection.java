@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBConnection {
-	
 
 	@SuppressWarnings("unused")
 	public static Connection getConnection(String url, String user, String password) throws ClassNotFoundException, SQLException {
@@ -19,8 +18,8 @@ public class DBConnection {
 		return con;
 	}
 	public static Connection ConnectControl() throws ClassNotFoundException, SQLException {
-		 String url = "jdbc:mysql://localhost:3306/control?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC\"";
-		 String user = "root";
+		 String url = "jdbc:mysql://localhost:3306/control";
+		 String user = "root"; 
 		 String password = "";
 		return getConnection(url, user, password);
 	}
@@ -44,6 +43,5 @@ public class DBConnection {
 		}
 		ps.close();
 		return getConnection(url, user, password);
-		
 	}
 }
