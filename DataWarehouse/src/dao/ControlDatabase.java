@@ -76,15 +76,19 @@ public class ControlDatabase {
 	public boolean insertValues(String column_list, String values, String target_table) throws ClassNotFoundException {
 		StringTokenizer stoken = new StringTokenizer(values, "|");
 		while (stoken.hasMoreElements()) {
-			sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " +  stoken.nextToken() ;
-			System.out.println(sql);
+			String next = stoken.nextToken();
+			if(!next.equals("('')")) {
+			sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " +  next ;
+			
 			try {
 				pst = DBConnection.ConnectControl().prepareStatement(sql);
 				pst.executeUpdate();
-				
+				pst.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				System.out.println(sql);
 				return false;
+			}
 			}
 		}
 		return true; 

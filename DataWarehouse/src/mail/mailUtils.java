@@ -20,7 +20,7 @@ public class mailUtils {
 	    public static final String APP_EMAIL = "Tung0164851@gmail.com"; // your email
 	 
 	    public static final String APP_PASSWORD = "njooxzjotjnxqaru"; // your password
-	public void SendMail(String reciver,String subject, String text) {
+	public static void SendMail(String reciver,String subject, String text) {
 		 // Get properties object
        Properties props = new Properties();
        props.put("mail.smtp.auth", "true");

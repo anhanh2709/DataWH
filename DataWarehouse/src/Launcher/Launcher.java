@@ -13,7 +13,8 @@ import util.ConfigUtils;
 
 public class Launcher {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		while(true) {
+		boolean run = true;
+		while(run) {
 		System.out.println("nhap lenh");
 		Scanner scanner = new Scanner(System.in);
 		String s = scanner.next();
@@ -36,11 +37,16 @@ public class Launcher {
 			cdb.setTarget_db_name("staging");
 			cdb.setTable_name("config");
 			rf.setCdb(cdb);
-			ls.ExtractToDatabase(rf);
+			ls.ExtractToDatabase(rf,com[2]);
 			break;
 		case "transform":
 			LoadFromStagingToWareHouse load = new LoadFromStagingToWareHouse();
-			load.load();
+			String cfgName3 = com[1];
+			Config config2 = ConfigUtils.getConfig(cfgName3);
+			load.load(config2);
+			break;
+		case "end":
+			run = false;
 			break;
 		default:
 			System.out.println("Lenh khong ho tro");

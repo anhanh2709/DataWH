@@ -7,10 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBConnection {
-	
+	static Connection con = null;
 
 	public static Connection getConnection(String url, String user, String password) throws ClassNotFoundException, SQLException {
-		Connection con = null;
 		if (con == null || con.isClosed()) {
 			con = DriverManager.getConnection(url, user, password);
 			return con;

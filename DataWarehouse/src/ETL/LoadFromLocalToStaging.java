@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.dump.InvalidFormatException;
@@ -40,7 +41,7 @@ public class LoadFromLocalToStaging {
 		this.configName = configName;
 	}
 
-	public void ExtractToDatabase(ReadFile rf) throws ClassNotFoundException, SQLException {
+	public void ExtractToDatabase(ReadFile rf, String file_arg) throws ClassNotFoundException, SQLException {
 		Config config = ConfigUtils.getConfig(this.configName);
 		String target_tb = config.getTarget_tb();
 		String file_type = config.getFile_type();
@@ -50,82 +51,87 @@ public class LoadFromLocalToStaging {
 		String delimeter = config.getDelimeter();
 		String columnList = config.getColumnList();
 		String dataTypes = config.getDataTypes();
-		System.out.println(file_type);
 
 		if (!rf.getCdb().tableExist(target_tb)) {
-			System.out.println(dataTypes);
 			rf.getCdb().createTable(target_tb, dataTypes, columnList);
 		}
-		System.out.println("not create");
 		File suc_dir = new File(success_dir);
 		if (suc_dir.exists()) {
 			String extention = "";
 			List<Log> listlog = LogUtils.getConfigByState("ER");
-			File[] listFile = suc_dir.listFiles();
-			System.out.println(listFile.length);
-			for (File file : listFile) {
-				for (Log log : listlog) {
-					//String file_name = file.getName().replaceAll("."+ file_type, "");
+			StringTokenizer str = new StringTokenizer(columnList,",");
+			File file = new File(suc_dir.getAbsolutePath()+ File.separator + file_arg);
+			if(!file.exists()) {
+				System.out.println("file" + file.getName() + "not exists in success directory");
+				return;
+			}
+					// String file_name = file.getName().replaceAll("."+ file_type, "");
+				for (Log log :listlog) {
 					String file_name = file.getName();
-					System.out.println("file "+ file_name);
-					System.out.println("file_log " + log.getFile_name());
 					if (file_name.equals(log.getFile_name())) {
 						if (file_type != null) {
 							String values = "";
 							if (file_type.equals("txt")) {
-								System.out.println("txt");
-								values = rf.readValuesTXT(file, delimeter);
+								values = rf.readValuesTXT(file, str.countTokens());
 								extention = ".txt";
-							} else if (file_type.equals(".xlsx")) {
-								values = rf.readValuesXLSX(file);
-								extention = ".xlsx";
 							}
-							if (values != null) {
-							//	String table = "log";
-								String state;
-								int config_id = config.getConfig_id();
+							if (file_type.equals("csv")) {
+									values = rf.readValuesTXT(file, str.countTokens());
+									extention = ".csv";
+							} else if (file_type.equals("xlsx")) {
+									values = rf.readValuesXLSX(file, str.countTokens());
+									extention = ".xlsx";
+							}
+								if (values != null) {
+									// String table = "log";
+									String state;
+									
+									int config_id = config.getConfig_id();
 
 //								time
-								Long millis = System.currentTimeMillis();
-								Timestamp currentTS = new Timestamp(millis);
+									Long millis = System.currentTimeMillis();
+									Timestamp currentTS = new Timestamp(millis);
 
 //								count line
-								String staging_count = "";
-								try {
-									staging_count = countLines(file, extention) + "";
-								} catch (InvalidFormatException
-										| org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
-									e.printStackTrace();
-								}
+									String staging_count = "";
+									try {
+										staging_count = countLines(file, extention) + "";
+									} catch (InvalidFormatException
+											| org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
+										e.printStackTrace();
+									}
 
-								String target_dir;
-
-								if (rf.writeDataToBD(columnList, target_tb, values)) {
-									System.out.println("trueeee");
-									state = "EXS";
-									System.out.println("Config_id = " +config_id + " TS = " +currentTS.toString() + "count =" +staging_count );
-									LogUtils.updateNewState(config_id, state, currentTS, Integer.parseInt(staging_count));
-									target_dir = config.getSuccess_dir();
+									String target_dir;
+									System.out.println("Extracting........");
+									if (rf.writeDataToBD(columnList, target_tb, values)) {
+										System.out.println("Extract success");
+										state = "EXS";
+										LogUtils.updateStateForAFile(config_id, state, currentTS,
+												Integer.parseInt(staging_count), file_name);
 //									if (moveFile(target_dir, file))
 //										;
-								} else {
-									state = "EXF";
-									LogUtils.updateNewState(config_id, state, currentTS, Integer.parseInt(staging_count));
-									target_dir = config.getErr_dir();
+									} else {
+										state = "EXF";
+										System.out.println("Extract Fail");
+										LogUtils.updateStateForAFile(config_id, state, currentTS,
+												Integer.parseInt(staging_count), file_name);
+										target_dir = config.getErr_dir();
 //									if (moveFile(target_dir, file))
 //										;
+									}
 								}
 							}
 						}
-					}
 
+					}
 				}
-			}
-		} else {
+			
+		 else {
 			System.out.println("Path not exists!!!");
 			return;
 		}
 	}
+
 
 	private boolean moveFile(String target_dir, File file) {
 		try {
@@ -144,7 +150,7 @@ public class LoadFromLocalToStaging {
 			e.printStackTrace();
 			return false;
 		} finally {
-			//file.delete();
+			// file.delete();
 		}
 	}
 
@@ -153,7 +159,7 @@ public class LoadFromLocalToStaging {
 		int result = 0;
 		XSSFWorkbook workBooks = null;
 		try {
-			if (extention.indexOf(".txt") != -1) {
+			if (extention.indexOf(".txt") != -1 || extention.indexOf(".csv") != -1) {
 				BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 				String line;
 				while ((line = bReader.readLine()) != null) {
@@ -187,16 +193,32 @@ public class LoadFromLocalToStaging {
 		}
 		return result;
 	}
+	public void reExtract() throws ClassNotFoundException, SQLException {
+		List<Log> listLog = LogUtils.getConfigByState("EXF");
+		for (Log log : listLog) {
+			ReadFile rf = new ReadFile();
+			this.ExtractToDatabase(rf, log.getFile_name());
+		}
+	}
+	public void reExtract(String config_name) throws ClassNotFoundException, SQLException {
+		List<Log> listLog = LogUtils.getConfigByState("EXF");
+		for (Log log : listLog) {
+			if(log.getConfig_id() == ConfigUtils.getConfig(config_name).getConfig_id()) {
+			ReadFile rf = new ReadFile();
+			this.ExtractToDatabase(rf, log.getFile_name());
+			}
+		}
+	}
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		LoadFromLocalToStaging ls = new LoadFromLocalToStaging();
-		ls.setConfigName("f.txt");
+		ls.setConfigName("f_dangky");
 		ReadFile rf = new ReadFile();
 		ControlDatabase cdb = new ControlDatabase();
 		cdb.setConfig_db_name("control");
 		cdb.setTarget_db_name("staging");
 		cdb.setTable_name("config");
 		rf.setCdb(cdb);
-		ls.ExtractToDatabase(rf);
+		ls.ExtractToDatabase(rf , "abc");
 	}
 }

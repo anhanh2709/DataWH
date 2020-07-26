@@ -118,8 +118,7 @@ public class LoadFromSources {
 			else {
 				copyFileUsingStream(f.getAbsolutePath(), new File(errDir + File.separator +f.getName()));
 				addDownloadLog(config_id,f.getName(), "F");
-				mailUtils mail = new mailUtils();
-				mail.SendMail("", "Download File fail", "Downloading file: "+ f.getName() + "process has been fail");
+				mailUtils.SendMail("", "Download File fail", "Downloading file: "+ f.getName() + "process has been fail");
 				f.delete();
 			}
 		}
@@ -148,7 +147,7 @@ public class LoadFromSources {
 				nonValueDate, -1, -1);
 	}
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		Config config = ConfigUtils.getConfig("f.txt");
+		Config config = ConfigUtils.getConfig("f_dangky");
 		LoadFromSources LFS = new LoadFromSources();
 		LFS.DownLoad(config);
 	}

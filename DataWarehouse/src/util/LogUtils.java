@@ -11,6 +11,7 @@ import java.util.List;
 
 import configuration.Config;
 import configuration.Log;
+import mail.mailUtils;
 
 public class LogUtils {
 	static Connection con;
@@ -22,7 +23,7 @@ public class LogUtils {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			mailUtils.SendMail("","Ket noi DataBase that bai" , e.getMessage());
 		}
 	}
 
@@ -66,7 +67,6 @@ public class LogUtils {
 			break;
 		}
 		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where config_id = ?";
-		System.out.println(sql);
 		Connection con = DBConnection.ConnectControl();
 		PreparedStatement ps = con.prepareStatement(sql);
 		ps.setString(1, state);
@@ -98,7 +98,7 @@ public class LogUtils {
 	public static List<Log> getConfigByState(String state) {
 		List<Log> listConfig = new ArrayList<Log>();
 		try {
-			String sql = "Select * from log where state = ?";
+			String sql = "Select distinct * from log where state = ?";
 			PreparedStatement ps = con.prepareStatement(sql);
 			ps.setString(1, state);
 			ResultSet rs = ps.executeQuery();
@@ -117,6 +117,39 @@ public class LogUtils {
 		}
 		return listConfig;
 	}
+	public static void updateStateForAFile(int config_id, String state, Timestamp timestamp, int count, String filename) throws ClassNotFoundException, SQLException {
+		String timestampCol = null;
+		String countCol = null;
+		switch (state) {
+		case "F":
+		case "ER":
+			timestampCol = "download_timestamp";
+			countCol = "staging_count";
+			break;
+		case "EXS":
+		case "EXF":
+			timestampCol = "staging_timestamp";
+			countCol = "staging_count";
+			break;
+		case "SUC":
+			timestampCol = "transform_timestamp";
+			countCol = "transform_count";
+			break;
+		default:
+			break;
+		}
+		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where config_id = ? and file_name = ?";
+		Connection con = DBConnection.ConnectControl();
+		PreparedStatement ps = con.prepareStatement(sql);
+		ps.setString(1, state);
+		ps.setTimestamp(2, timestamp);
+		ps.setInt(3, count);
+		ps.setInt(4, config_id);
+		ps.setString(5, filename);
+		ps.execute();
+		ps.close();
+	}
+
 
 
 }
