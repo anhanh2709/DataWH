@@ -44,7 +44,7 @@ public class LogUtils {
 		ps.execute();
 		ps.close();
 	}
-	public static void updateNewState(int config_id, String state, Timestamp timestamp, int count) throws ClassNotFoundException, SQLException {
+	public static void updateNewState(String file_name, String state, Timestamp timestamp, int count) throws ClassNotFoundException, SQLException {
 		String timestampCol = null;
 		String countCol = null;
 		switch (state) {
@@ -65,14 +65,14 @@ public class LogUtils {
 		default:
 			break;
 		}
-		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where config_id = ?";
+		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where file_name = ?";
 		System.out.println(sql);
 		Connection con = DBConnection.ConnectControl();
 		PreparedStatement ps = con.prepareStatement(sql);
 		ps.setString(1, state);
 		ps.setTimestamp(2, timestamp);
 		ps.setInt(3, count);
-		ps.setInt(4, config_id);
+		ps.setString(4, file_name);
 		ps.execute();
 		ps.close();
 	}
