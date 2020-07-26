@@ -19,7 +19,7 @@ public class mailUtils {
 	 
 	    public static final String APP_EMAIL = "kanh2709@gmail.com"; // your email
 	 
-	    public static final String APP_PASSWORD = "baejoohyun1991"; // your password
+	    public static final String APP_PASSWORD = ""; // your password
 	public void SendMail(String reciver,String subject, String text) {
 		 // Get properties object
        Properties props = new Properties();
