@@ -35,32 +35,40 @@ public class ReadFile {
 
 	private String readLines(String value, String delim) {
 		String values = "";
+
+//		tạo ra một lớp StringTokenizer dựa trên chuỗi chỉ định và dấu phân cách.
 		StringTokenizer stoken = new StringTokenizer(value, delim);
+//		countTokens: Trả về tổng số lượng của các token.
 		int countToken = stoken.countTokens();
 		String lines = "(";
+
 		for (int j = 0; j < countToken; j++) {
+//			next token: Trả về token tiếp theo khi duyệt đối tượng StringTokenizer
 			String token = stoken.nextToken();
-//			if (Pattern.matches(NUMBER_REGEX, token)) {
-//				lines += (j == countToken - 1) ? token.trim() + ")|" : token.trim() + ",";
-//			} else {
-				lines += (j == countToken - 1) ? "'" + token.trim() + "')|" : "'" + token.trim() + "',";
-//			}
+
+			lines += (j == countToken - 1) ? "'" + token.trim() + "')|" : "'" + token.trim() + "',";
+
 			values += lines;
 			lines = "";
 		}
 		return values;
 	}
 
-	public String readValuesTXT(File s_file,  int count_field) {
+	public String readValuesTXT(File s_file, int count_field) {
 		if (!s_file.exists()) {
 			return null;
 		}
 		String values = "";
-		String delim = "|"; // hoặc \t
+		String delim = "|";
 		try {
 			// Đọc một dòng dữ liệu có trong file:
+//			BufferedReader đọc văn bản từ inputStream dựa trên các kí tự 
+//			readline đọc từng dòng
+//			FileInputStream đọc file từ các byte từ file input
+//			InputStreamReader đọc kí tự
 			BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(s_file), "utf8"));
 			String line = bReader.readLine();
+//			indexOf trả về kí tự đã cho là "\t" 
 			if (line.indexOf("\t") != -1) {
 				delim = "\t";
 			}
@@ -70,9 +78,10 @@ public class ReadFile {
 //				bReader.close();
 //				return null;
 //			}
-			// STT|Mã sinh viên|Họ lót|Tên|...-> line.split(delim)[0]="STT"
-			// không phải số nên là header -> bỏ qua line
-			// Kiểm tra xem có phần header hay không
+//			 STT|Mã sinh viên|Họ lót|Tên|...-> line.split(delim)[0]="STT"
+//			 không phải số nên là header -> bỏ qua line
+//			 Kiểm tra xem có phần header hay không
+//			tạo một matcher khớp với đầu vào đã cho với mẫu.
 			if (Pattern.matches(NUMBER_REGEX, line.split(delim)[0])) {
 				values += readLines(line + delim, delim);
 			}
@@ -89,6 +98,7 @@ public class ReadFile {
 				values += readLines(line + " " + delim, delim);
 			}
 			bReader.close();
+//			subString in ra giá trị từ đầu tới cuối
 			return values.substring(0, values.length() - 1);
 		} catch (NoSuchElementException | IOException e) {
 			e.printStackTrace();
@@ -96,13 +106,13 @@ public class ReadFile {
 		}
 	}
 
-	public String readValuesXLSX(File s_file,int countField) {
+	public String readValuesXLSX(File s_file, int countField) {
 		String values = "";
 		String value = "";
 		String delim = "|";
 		try {
 			FileInputStream fileIn = new FileInputStream(s_file);
-			XSSFWorkbook workBook = new XSSFWorkbook(fileIn);
+			XSSFWorkbook workBook = new XSSFWorkbook(fileIn); //file xlsx
 			XSSFSheet sheet = workBook.getSheetAt(0);
 			Iterator<Row> rows = sheet.iterator();
 			// Kiểm tra xem có phần header hay không, nếu không có phần header
@@ -112,8 +122,8 @@ public class ReadFile {
 			if (rows.next().cellIterator().next().getCellType().equals(CellType.NUMERIC)) {
 				rows = sheet.iterator();
 			}
-			while (rows.hasNext()) {
-				Row row = rows.next();
+			while (rows.hasNext()) { // co lay phan tu tiep theo khong
+				Row row = rows.next(); //lay phan tu tiep theo
 				// Kiểm tra coi cái số trường ở trong file excel có đúng với
 				// số trường có trong cái bảng mình tạo sẵn ở trong table
 				// staging không
@@ -123,8 +133,8 @@ public class ReadFile {
 //				}
 				// Bắt đầu lấy giá trị trong các ô ra:
 //				Iterator<Cell> cells = row.cellIterator();
-				 for(int cn=0; cn<countField; cn++) {
-				//	Cell cell = cells.next();
+				for (int cn = 0; cn < countField; cn++) {
+					// Cell cell = cells.next();
 					Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
 					CellType cellType = cell.getCellType();
 					switch (cellType) {
