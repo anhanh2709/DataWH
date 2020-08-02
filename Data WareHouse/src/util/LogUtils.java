@@ -11,6 +11,7 @@ import java.util.List;
 
 import configuration.Config;
 import configuration.Log;
+import mail.mailUtils;
 
 public class LogUtils {
 	static Connection con;
@@ -22,14 +23,14 @@ public class LogUtils {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			mailUtils.SendMail("", "Ket noi DataBase that bai", e.getMessage());
 		}
 	}
 
 	public static void insertNewLog(int config_id, String file_name, String state, Timestamp staging_timestamp,
-			Timestamp download_timestamp, Timestamp transform_timestamp, int staging_count, int transform_count) 
-					throws ClassNotFoundException, SQLException {
-		
+			Timestamp download_timestamp, Timestamp transform_timestamp, int staging_count, int transform_count)
+			throws ClassNotFoundException, SQLException {
+
 		String sql = "insert into log(config_id, file_name, state, staging_timestamp, download_timestamp,"
 				+ "transform_timestamp,staging_count, transform_count) values(?,?,?,?,?,?,?,?)";
 		PreparedStatement ps = con.prepareStatement(sql);
@@ -44,7 +45,9 @@ public class LogUtils {
 		ps.execute();
 		ps.close();
 	}
-	public static void updateNewState(String file_name, String state, Timestamp timestamp, int count) throws ClassNotFoundException, SQLException {
+
+	public static void updateNewState(int config_id, String state, Timestamp timestamp, int count)
+			throws ClassNotFoundException, SQLException {
 		String timestampCol = null;
 		String countCol = null;
 		switch (state) {
@@ -65,68 +68,94 @@ public class LogUtils {
 		default:
 			break;
 		}
-		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where file_name = ?";
-		System.out.println(sql);
+		String sql = "update log set state = ?, " + timestampCol + "= ?," + countCol + "= ? where config_id = ?";
 		Connection con = DBConnection.ConnectControl();
 		PreparedStatement ps = con.prepareStatement(sql);
 		ps.setString(1, state);
 		ps.setTimestamp(2, timestamp);
 		ps.setInt(3, count);
-		ps.setString(4, file_name);
+		ps.setInt(4, config_id);
 		ps.execute();
 		ps.close();
 	}
+
 	public static List<Integer> getConfigIDByState(String state) {
 		List<Integer> listConfig = new ArrayList<Integer>();
 		try {
-			
+
 			String sql = "Select distinct config_id from  log where state = ?";
 			PreparedStatement ps = con.prepareStatement(sql);
 			ps.setString(1, state);
 			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
+			while (rs.next()) {
 				listConfig.add(rs.getInt("config_id"));
 			}
 			ps.close();
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return listConfig;
 	}
-	
-	
-	public static Log getConfigByState(String state) {
-//		List<Log> listConfig = new ArrayList<Log>();
-		Log log = new Log();
+
+	public static List<Log> getConfigByState(String state) {
+		List<Log> listConfig = new ArrayList<Log>();
 		try {
-			String sql = "Select * from log where state = ?";
+			String sql = "Select distinct * from log where state = ?";
 			PreparedStatement ps = con.prepareStatement(sql);
 			ps.setString(1, state);
 			ResultSet rs = ps.executeQuery();
-			rs.last();
-			if(rs.getRow()>=1) {
-				rs.first();
-				log.setLog_id(rs.getInt("log_id"));
-				log.setConfig_id(rs.getInt("config_id"));
-				log.setFile_name(rs.getString("file_name"));
-				log.setState(rs.getString("state"));
-				log.setStaging_count(rs.getInt("staging_count"));
-				log.setTransform_count(rs.getInt("transform_count"));
+			while (rs.next()) {
+				listConfig.add(new Log(rs.getInt("config_id"), rs.getString("file_name"), rs.getString("state"),
+						rs.getInt("staging_count"), rs.getInt("transform_count")));
 			}
 			ps.close();
-			
+
 		} catch (SQLException e) {
-	
+
 			e.printStackTrace();
 		}
-		return log;
+		return listConfig;
 	}
+
+	public static void updateStateForAFile(int config_id, String state, Timestamp timestamp, int count, String filename)
+			throws ClassNotFoundException, SQLException {
+		String timestampCol = null;
+		String countCol = null;
+		switch (state) {
+		case "F":
+		case "ER":
+			timestampCol = "download_timestamp";
+			countCol = "staging_count";
+			break;
+		case "EXS":
+		case "EXF":
+			timestampCol = "staging_timestamp";
+			countCol = "staging_count";
+			break;
+		case "SUC":
+			timestampCol = "transform_timestamp";
+			countCol = "transform_count";
+			break;
+		default:
+			break;
+		}
+		String sql = "update log set state = ?, " + timestampCol + "= ?," + countCol
+				+ "= ? where config_id = ? and file_name = ?";
+		Connection con = DBConnection.ConnectControl();
+		PreparedStatement ps = con.prepareStatement(sql);
+		ps.setString(1, state);
+		ps.setTimestamp(2, timestamp);
+		ps.setInt(3, count);
+		ps.setInt(4, config_id);
+		ps.setString(5, filename);
+		ps.execute();
+		ps.close();
+	}
+
 	public static void main(String[] args) {
 		LogUtils l = new LogUtils();
 		System.out.println(l.getConfigByState("ER"));
 	}
-
-
 }

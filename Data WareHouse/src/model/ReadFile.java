@@ -1,4 +1,4 @@
-package modal;
+package model;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,20 +36,22 @@ public class ReadFile {
 	private String readLines(String value, String delim) {
 		String values = "";
 		StringTokenizer stoken = new StringTokenizer(value, delim);
-		int countToken = stoken.countTokens() - 1;
+		int countToken = stoken.countTokens();
 		String lines = "(";
-		String token = "";
-		stoken.nextToken();
 		for (int j = 0; j < countToken; j++) {
-			token = stoken.nextToken();
-			lines += (j == countToken - 1) ? '"' + token.trim() + '"' + ")," : '"' + token.trim() + '"' + ",";
+			String token = stoken.nextToken();
+//			if (Pattern.matches(NUMBER_REGEX, token)) {
+//				lines += (j == countToken - 1) ? token.trim() + ")|" : token.trim() + ",";
+//			} else {
+				lines += (j == countToken - 1) ? "'" + token.trim() + "')|" : "'" + token.trim() + "',";
+//			}
 			values += lines;
 			lines = "";
 		}
 		return values;
 	}
 
-	public String readValuesTXT(File s_file, int count_field) {
+	public String readValuesTXT(File s_file,  int count_field) {
 		if (!s_file.exists()) {
 			return null;
 		}
@@ -62,7 +64,12 @@ public class ReadFile {
 			if (line.indexOf("\t") != -1) {
 				delim = "\t";
 			}
-
+			// Kiểm tra xem tổng số field trong file có đúng format hay không
+			// (11 trường)
+//			if (new StringTokenizer(line, delim).countTokens() != (count_field + 1)) {
+//				bReader.close();
+//				return null;
+//			}
 			// STT|Mã sinh viên|Họ lót|Tên|...-> line.split(delim)[0]="STT"
 			// không phải số nên là header -> bỏ qua line
 			// Kiểm tra xem có phần header hay không
@@ -83,15 +90,13 @@ public class ReadFile {
 			}
 			bReader.close();
 			return values.substring(0, values.length() - 1);
-
 		} catch (NoSuchElementException | IOException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-
-	public String readValuesXLSX(File s_file, int countField) {
+	public String readValuesXLSX(File s_file,int countField) {
 		String values = "";
 		String value = "";
 		String delim = "|";
@@ -112,14 +117,15 @@ public class ReadFile {
 				// Kiểm tra coi cái số trường ở trong file excel có đúng với
 				// số trường có trong cái bảng mình tạo sẵn ở trong table
 				// staging không
-				if (row.getLastCellNum() < countField + 1 || row.getLastCellNum() > countField + 2) {
-					workBook.close();
-					return null;
-				}
+//				if (row.getLastCellNum() < countField + 1 || row.getLastCellNum() > countField + 2) {
+//					workBook.close();
+//					return null;
+//				}
 				// Bắt đầu lấy giá trị trong các ô ra:
-				Iterator<Cell> cells = row.cellIterator();
-				while (cells.hasNext()) {
-					Cell cell = cells.next();
+//				Iterator<Cell> cells = row.cellIterator();
+				 for(int cn=0; cn<countField; cn++) {
+				//	Cell cell = cells.next();
+					Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
 					CellType cellType = cell.getCellType();
 					switch (cellType) {
 					case NUMERIC:
@@ -147,6 +153,8 @@ public class ReadFile {
 						}
 						break;
 					case BLANK:
+						value += " " + delim;
+						break;
 					default:
 						value += " " + delim;
 						break;
@@ -165,7 +173,6 @@ public class ReadFile {
 			return null;
 		}
 	}
-
 
 	public boolean writeDataToBD(String column_list, String target_table, String values) throws ClassNotFoundException {
 		if (cdb.insertValues(column_list, values, target_table))

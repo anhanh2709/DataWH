@@ -6,11 +6,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
 
-import configuration.Config;
 import util.DBConnection;
 
 public class ControlDatabase {
@@ -56,7 +53,7 @@ public class ControlDatabase {
 
 	public boolean tableExist(String table_name) throws ClassNotFoundException {
 		try {
-			DatabaseMetaData dbm = DBConnection.ConnectStaging().getMetaData();
+			DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
 			ResultSet tables = dbm.getTables(null, null, table_name, null);
 			try {
 				if (tables.next()) {
@@ -75,56 +72,27 @@ public class ControlDatabase {
 
 		return false;
 	}
-	
-	//lay listconfig
-	public static List<Config> loadAllConfig(String config_name) throws ClassNotFoundException, SQLException {
-		List<Config> listConfig = new ArrayList<Config>();
-		String sql = "select * from config where config_name = ?";
-		Connection con = DBConnection.ConnectControl();
-		PreparedStatement ps = con.prepareStatement(sql);
-		ps.setString(1, config_name);
-		ResultSet rs = ps.executeQuery();
-		while(rs.next()) {
-			Config config = new Config();
-			config.setConfig_id(rs.getInt("config_id"));
-			config.setConfig_name(rs.getString("config_name"));
-			config.setColumnList(rs.getString("config_id"));
-			config.setDataTypes(rs.getString("dataTypes"));
-			config.setDelimeter(rs.getString("delimeter"));
-			config.setImport_dir(rs.getString("import_dir"));
-			config.setSuccess_dir(rs.getString("success_dir"));
-			config.setErr_dir(rs.getString("err_dir"));
-			config.setSrc_url(rs.getString("src_url"));
-			config.setSrc_path(rs.getString("src_path"));
-			config.setSrc_user(rs.getString("src_user"));
-			config.setTarget_tb(rs.getString("target_tb"));
-			config.setSrc_pass(rs.getString("src_pass"));
-			config.setFile_Mask(rs.getString("file_mask"));
-			config.setFile_type(rs.getString("file_type"));
-			config.setColumnList(rs.getString("columnList"));
-			listConfig.add(config);
-		}
-		ps.close();
-		return listConfig;
-	}
-
 
 	public boolean insertValues(String column_list, String values, String target_table) throws ClassNotFoundException {
 		StringTokenizer stoken = new StringTokenizer(values, "|");
 		while (stoken.hasMoreElements()) {
-			sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " +  stoken.nextToken() ;
-			System.out.println(sql);
-			try {
-				pst = DBConnection.ConnectStaging().prepareStatement(sql);
-				pst.executeUpdate();
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-				return false;
+			String next = stoken.nextToken();
+			if (!next.equals("('')")) {
+				sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " + next;
+
+				try {
+					pst = DBConnection.ConnectControl().prepareStatement(sql);
+					pst.executeUpdate();
+					pst.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.println(sql);
+					return false;
+				}
 			}
 		}
-		return true; 
-		
+		return true;
+
 	}
 
 	public boolean insertLog(String table, String file_status, int config_id, String timestamp,
@@ -155,14 +123,17 @@ public class ControlDatabase {
 
 		}
 	}
-	public boolean updateLog(int config_id, String file_name, String state, Date staging_timestamp) throws ClassNotFoundException {
+
+	public boolean updateLog(int config_id, String file_name, String state, Date staging_timestamp)
+			throws ClassNotFoundException {
 		Connection connection;
 		try {
 			connection = DBConnection.ConnectControl();
 			PreparedStatement ps1 = connection.prepareStatement("UPDATE log SET active = 0 WHERE file_name=?");
 			ps1.setString(1, file_name);
 			ps1.executeUpdate();
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO log (config_id, file_name, file_type, status, file_timestamp, active) value (?,?,?,?,?,1)");
+			PreparedStatement ps = connection.prepareStatement(
+					"INSERT INTO log (config_id, file_name, file_type, status, file_timestamp, active) value (?,?,?,?,?,1)");
 			ps.setInt(1, config_id);
 			ps.setString(2, file_name);
 			ps.setString(3, state);
@@ -178,13 +149,13 @@ public class ControlDatabase {
 
 	public boolean createTable(String table_name, String variables, String column_list) throws ClassNotFoundException {
 		System.out.println("create");
-		sql = "CREATE TABLE "+table_name+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
+		sql = "CREATE TABLE " + table_name + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
 		String[] vari = variables.split(",");
 		String[] col = column_list.split(",");
-		for(int i =0;i<vari.length;i++) {
-			sql+=col[i]+" "+vari[i]+ " NOT NULL,";
+		for (int i = 0; i < vari.length; i++) {
+			sql += col[i] + " " + vari[i] + " NOT NULL,";
 		}
-		sql = sql.substring(0,sql.length()-1)+")";
+		sql = sql.substring(0, sql.length() - 1) + ")";
 		System.out.println(sql);
 		try {
 			pst = DBConnection.ConnectStaging().prepareStatement(sql);
@@ -205,10 +176,11 @@ public class ControlDatabase {
 
 		}
 	}
+
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
-		ResultSet tables = dbm.getTables(null, null, "student", null);
-		while(tables.next()) {
+		ResultSet tables = dbm.getTables(null, null, "Student", null);
+		while (tables.next()) {
 			System.out.println("???");
 		}
 	}

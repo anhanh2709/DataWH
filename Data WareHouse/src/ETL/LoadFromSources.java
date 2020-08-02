@@ -4,12 +4,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -20,12 +26,13 @@ import com.chilkatsoft.CkSsh;
 import configuration.Config;
 import mail.mailUtils;
 import util.ConfigUtils;
+import util.DBConnection;
 import util.LogUtils;
 
 public class LoadFromSources {
 	static {
 		try {
-			System.load("I:\\Java Project\\ProjectWH\\chilkat.dll"); //copy file chilkat.dll vao thu muc project
+			System.load("I:\\DataWH-Thanh_Tung\\DataWarehouse\\chilkat.dll"); //copy file chilkat.dll vao thu muc project
 		} catch (UnsatisfiedLinkError e) {
 			System.err.println("Native code library failed to load.\n" + e);
 			System.exit(1);
@@ -111,8 +118,7 @@ public class LoadFromSources {
 			else {
 				copyFileUsingStream(f.getAbsolutePath(), new File(errDir + File.separator +f.getName()));
 				addDownloadLog(config_id,f.getName(), "F");
-				mailUtils mail = new mailUtils();
-				mail.SendMail("", "Download File fail", "Downloading file: "+ f.getName() + "process has been fail");
+				mailUtils.SendMail("", "Download File fail", "Downloading file: "+ f.getName() + "process has been fail");
 				f.delete();
 			}
 		}
@@ -134,16 +140,18 @@ public class LoadFromSources {
 	}
 	public void addDownloadLog(int config_id,String file_name, String state) throws ParseException, ClassNotFoundException, SQLException {
 		Timestamp download_timestamp = new Timestamp(System.currentTimeMillis()) ;
-		GregorianCalendar cal = new GregorianCalendar(2070,12,31);
-		long millis = cal.getTimeInMillis();
+
+		Long millis = System.currentTimeMillis();
+
 		Timestamp nonValueDate = new Timestamp(millis);
 		LogUtils.insertNewLog(config_id, file_name, state, nonValueDate, download_timestamp,
 				nonValueDate, -1, -1);
 	}
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		Config config = ConfigUtils.getConfig("f.txt");
+		Config config = ConfigUtils.getConfig("f_sinhvien");
 		LoadFromSources LFS = new LoadFromSources();
 		LFS.DownLoad(config);
 	}
 
 }
+
