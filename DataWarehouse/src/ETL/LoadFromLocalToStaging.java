@@ -27,10 +27,16 @@ import util.LogUtils;
 import configuration.Config;
 import configuration.Log;
 import dao.ControlDatabase;
+import mail.mailUtils;
 import model.ReadFile;
 import util.ConfigUtils;
 
 public class LoadFromLocalToStaging {
+
+	String filetxt = ".txt";
+	String filecsv = ".csv";
+	String filexlsx = ".xlsx";
+
 	private String configName;
 
 	public String getConfigName() {
@@ -56,82 +62,89 @@ public class LoadFromLocalToStaging {
 			rf.getCdb().createTable(target_tb, dataTypes, columnList);
 		}
 		File suc_dir = new File(success_dir);
+
 		if (suc_dir.exists()) {
 			String extention = "";
 			List<Log> listlog = LogUtils.getConfigByState("ER");
-			StringTokenizer str = new StringTokenizer(columnList,",");
-			File file = new File(suc_dir.getAbsolutePath()+ File.separator + file_arg);
-			if(!file.exists()) {
+			StringTokenizer str = new StringTokenizer(columnList, ",");
+			File file = new File(suc_dir + File.separator + file_arg);
+			System.out.println(file);
+
+			if (!file.exists()) {
 				System.out.println("file" + file.getName() + "not exists in success directory");
 				return;
 			}
-					// String file_name = file.getName().replaceAll("."+ file_type, "");
-				for (Log log :listlog) {
-					String file_name = file.getName();
-					if (file_name.equals(log.getFile_name())) {
-						if (file_type != null) {
-							String values = "";
-							if (file_type.equals("txt")) {
-								values = rf.readValuesTXT(file, str.countTokens());
-								extention = ".txt";
-							}
-							if (file_type.equals("csv")) {
-									values = rf.readValuesTXT(file, str.countTokens());
-									extention = ".csv";
-							} else if (file_type.equals("xlsx")) {
-									values = rf.readValuesXLSX(file, str.countTokens());
-									extention = ".xlsx";
-							}
-								if (values != null) {
-									// String table = "log";
-									String state;
-									
-									int config_id = config.getConfig_id();
+			// String file_name = file.getName().replaceAll("."+ file_type, "");
+			for (Log log : listlog) {
+				String file_name = file.getName();
+				if (file_name.equals(log.getFile_name())) {
+
+					extention = file.getPath().endsWith(".xlsx") ? filexlsx
+							: file.getPath().endsWith(".txt") ? filetxt : filetxt;
+
+					if (file_type != null) {
+						String values = "";
+						if (extention.equals(".txt")) {
+							values = rf.readValuesTXT(file, str.countTokens());
+							extention = ".txt";
+						}
+						if (extention.equals(".csv")) {
+							values = rf.readValuesTXT(file, str.countTokens());
+							extention = ".csv";
+						} else if (extention.equals(".xlsx")) {
+							values = rf.readValuesXLSX(file, str.countTokens());
+							extention = ".xlsx";
+						}
+						System.out.println(values);
+
+						if (values != null) {
+							// String table = "log";
+							String state;
+							int config_id = config.getConfig_id();
 
 //								time
-									Long millis = System.currentTimeMillis();
-									Timestamp currentTS = new Timestamp(millis);
+							Long millis = System.currentTimeMillis();
+							Timestamp currentTS = new Timestamp(millis);
 
 //								count line
-									String staging_count = "";
-									try {
-										staging_count = countLines(file, extention) + "";
-									} catch (InvalidFormatException
-											| org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
-										e.printStackTrace();
-									}
+							String staging_count = "";
+							try {
+								staging_count = countLines(file, extention) + "";
+							} catch (InvalidFormatException
+									| org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
+								e.printStackTrace();
+							}
 
-									String target_dir;
-									System.out.println("Extracting........");
-									if (rf.writeDataToBD(columnList, target_tb, values)) {
-										System.out.println("Extract success");
-										state = "EXS";
-										LogUtils.updateStateForAFile(config_id, state, currentTS,
-												Integer.parseInt(staging_count), file_name);
-//									if (moveFile(target_dir, file))
-//										;
-									} else {
-										state = "EXF";
-										System.out.println("Extract Fail");
-										LogUtils.updateStateForAFile(config_id, state, currentTS,
-												Integer.parseInt(staging_count), file_name);
-										target_dir = config.getErr_dir();
-//									if (moveFile(target_dir, file))
-//										;
-									}
-								}
+							System.out.println("Extracting........");
+
+							String target_dir;
+							if (rf.writeDataToBD(columnList, target_tb, values)) {
+								System.out.println("Extract success");
+								state = "EXS";
+								LogUtils.updateStateForAFile(config_id, state, currentTS,
+										Integer.parseInt(staging_count), file_name);
+
+							} else {
+								state = "EXF";
+								System.out.println("Extract Fail");
+								LogUtils.updateStateForAFile(config_id, state, currentTS,
+										Integer.parseInt(staging_count), file_name);
+//								mailUtils.SendMail("kanh2709@gmail.com", "Load file từ local lên staging",
+//										"Load thất bại!!!");
+								target_dir = config.getErr_dir();
+								if (moveFile(target_dir, file))
+									;
 							}
 						}
-
 					}
 				}
-			
-		 else {
+
+			}
+		} else {
 			System.out.println("Path not exists!!!");
 			return;
 		}
 	}
-
 
 	private boolean moveFile(String target_dir, File file) {
 		try {
@@ -193,6 +206,8 @@ public class LoadFromLocalToStaging {
 		}
 		return result;
 	}
+
+	// chạy hết các file có state là EXF
 	public void reExtract() throws ClassNotFoundException, SQLException {
 		List<Log> listLog = LogUtils.getConfigByState("EXF");
 		for (Log log : listLog) {
@@ -200,25 +215,27 @@ public class LoadFromLocalToStaging {
 			this.ExtractToDatabase(rf, log.getFile_name());
 		}
 	}
+
+	// chạy từng file có state là EXF
 	public void reExtract(String config_name) throws ClassNotFoundException, SQLException {
 		List<Log> listLog = LogUtils.getConfigByState("EXF");
 		for (Log log : listLog) {
-			if(log.getConfig_id() == ConfigUtils.getConfig(config_name).getConfig_id()) {
-			ReadFile rf = new ReadFile();
-			this.ExtractToDatabase(rf, log.getFile_name());
+			if (log.getConfig_id() == ConfigUtils.getConfig(config_name).getConfig_id()) {
+				ReadFile rf = new ReadFile();
+				this.ExtractToDatabase(rf, log.getFile_name());
 			}
 		}
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		LoadFromLocalToStaging ls = new LoadFromLocalToStaging();
-		ls.setConfigName("f_dangky");
+		ls.setConfigName("f_lophoc");
 		ReadFile rf = new ReadFile();
 		ControlDatabase cdb = new ControlDatabase();
 		cdb.setConfig_db_name("control");
 		cdb.setTarget_db_name("staging");
 		cdb.setTable_name("config");
 		rf.setCdb(cdb);
-		ls.ExtractToDatabase(rf , "abc");
+		ls.ExtractToDatabase(rf, "lophoc_sang_nhom4_2020.xlsx");
 	}
 }

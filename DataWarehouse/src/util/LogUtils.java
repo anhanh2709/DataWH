@@ -5,9 +5,13 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.sql.CallableStatement;
 
 import configuration.Config;
 import configuration.Log;
@@ -45,7 +49,7 @@ public class LogUtils {
 		ps.execute();
 		ps.close();
 	}
-	public static void updateNewState(int config_id, String state, Timestamp timestamp, int count) throws ClassNotFoundException, SQLException {
+	public static void updateNewState(int config_id, String state, Timestamp timestamp, int count, String file_name) throws ClassNotFoundException, SQLException {
 		String timestampCol = null;
 		String countCol = null;
 		switch (state) {
@@ -66,13 +70,14 @@ public class LogUtils {
 		default:
 			break;
 		}
-		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where config_id = ?";
+		String sql = "update log set state = ?, " +timestampCol + "= ?," +countCol+ "= ? where config_id = ? and file_name = ?";
 		Connection con = DBConnection.ConnectControl();
 		PreparedStatement ps = con.prepareStatement(sql);
 		ps.setString(1, state);
 		ps.setTimestamp(2, timestamp);
 		ps.setInt(3, count);
 		ps.setInt(4, config_id);
+		ps.setString(5, file_name);
 		ps.execute();
 		ps.close();
 	}
@@ -149,6 +154,64 @@ public class LogUtils {
 		ps.execute();
 		ps.close();
 	}
+	public static String getFirstFileInLog(int i, String state) throws ClassNotFoundException, SQLException {
+		String sql = "select file_name from control.log where config_id = ? and state = ? limit 1";
+		Connection con = DBConnection.ConnectControl();
+		PreparedStatement ps = con.prepareStatement(sql);
+		ps.setInt(1, i);
+		ps.setString(2, state);
+		ResultSet rs = ps.executeQuery();
+		if(!rs.next()) {
+			System.out.println("Khong co file nao du dieu kien extract");
+			return "";
+		}
+		else {
+			return rs.getString("file_name");
+		}
+	}
+	public static Config getConfigAutoRun() throws SQLException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		String sql = "Call control.getNextRunConFig(?)";
+		CallableStatement clstm = con.prepareCall(sql);
+		int config_id = 0;
+		clstm.registerOutParameter(1, Types.INTEGER);
+		clstm.execute();
+		config_id = clstm.getInt(1);
+		System.out.println(config_id);
+		Config config  = ConfigUtils.getConfigByID(config_id);
+		return config;
+	}
+	public static boolean checkExistFileName(String name, int config_id) throws SQLException {
+		// TODO Auto-generated method stub
+		String sql = "select file_name from control.log where file_name = ? and config_id = ?";
+		PreparedStatement prpsm = con.prepareStatement(sql);
+		prpsm.setString(1, name);
+		prpsm.setInt(2, config_id);
+		ResultSet rs = prpsm.executeQuery();
+		if(rs.next()) {
+			if(rs.next()) {
+				return false;
+			}
+			else {
+				return true;
+			}
+		}
+		return false;
+	}
+	public static void main(String[] args) {
+		try {
+			getConfigAutoRun();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+
+	
 
 
 

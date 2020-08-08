@@ -155,7 +155,7 @@ public class ControlDatabase {
 		sql = sql.substring(0,sql.length()-1)+")";
 		System.out.println(sql);
 		try {
-			pst = DBConnection.ConnectControl().prepareStatement(sql);
+			pst = DBConnection.ConnectStaging().prepareStatement(sql);
 			pst.executeUpdate();
 			return true;
 		} catch (SQLException e) {

@@ -1,3 +1,6 @@
 eclipse.preferences.version=1
+encoding//src/ETL/LoadFromLocalToStaging.java=UTF-8
+encoding//src/ETL/LoadFromSources.java=UTF-8
+encoding//src/ETL/LoadFromStagingToWareHouse.java=UTF-8
 encoding//src/model/ReadFile.java=UTF-8
 encoding//src/util/DBConnection.java=UTF-8

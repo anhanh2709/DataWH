@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import mail.mailUtils;
+
 public class DBConnection {
 	static Connection con = null;
 
@@ -28,20 +30,29 @@ public class DBConnection {
 	public static Connection ConnectWareHouse() throws ClassNotFoundException, SQLException {
 		return getConnectionFromControl("WareHouse");
 	}
-	public static Connection getConnectionFromControl(String db) throws ClassNotFoundException, SQLException {
-		Connection con = ConnectControl();
-		String sql = "select con_url, user, password from connection where db_name = ?";
-		PreparedStatement ps = con.prepareStatement(sql);
-		ps.setString(1, db);
-		ResultSet rs = ps.executeQuery();
-		String url = null, user = null, password = null;
-		while(rs.next()) {
-			url = rs.getString("con_url");
-			user = rs.getString("user");
-			password = rs.getString("password");
+	public static Connection getConnectionFromControl(String db)  {
+		Connection con;
+		try {
+			con = ConnectControl();
+			String sql = "select con_url, user, password from connection where db_name = ?";
+			PreparedStatement ps = con.prepareStatement(sql);
+			ps.setString(1, db);
+			ResultSet rs = ps.executeQuery();
+			String url = null, user = null, password = null;
+			while(rs.next()) {
+				url = rs.getString("con_url");
+				user = rs.getString("user");
+				password = rs.getString("password");
+			}
+			ps.close();
+			return getConnection(url, user, password);
+		} catch (ClassNotFoundException | SQLException e) {
+		
+			e.printStackTrace();
+			mailUtils.SendMail("abc@gmail.com", "Kết nối dB thất bai", "Kết nối databse thất bại");
+			return null;
 		}
-		ps.close();
-		return getConnection(url, user, password);
+		
 		
 	}
 }

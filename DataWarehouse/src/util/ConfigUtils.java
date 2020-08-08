@@ -37,5 +37,33 @@ public final class ConfigUtils {
 		ps.close();
 		return config;
 	}
+	public static Config getConfigByID(int config_id) throws ClassNotFoundException, SQLException {
+		Config config = new Config();
+		String sql = "select * from config where config_id = ?";
+		Connection con = DBConnection.ConnectControl();
+		PreparedStatement ps = con.prepareStatement(sql);
+		ps.setInt(1, config_id);
+		ResultSet rs = ps.executeQuery();
+		while(rs.next()) {
+			config.setConfig_id(rs.getInt("config_id"));
+			config.setConfig_name(rs.getString("config_name"));
+			config.setColumnList(rs.getString("config_id"));
+			config.setDataTypes(rs.getString("dataTypes"));
+			config.setDelimeter(rs.getString("delimeter"));
+			config.setImport_dir(rs.getString("import_dir"));
+			config.setSuccess_dir(rs.getString("success_dir"));
+			config.setErr_dir(rs.getString("err_dir"));
+			config.setSrc_url(rs.getString("src_url"));
+			config.setSrc_path(rs.getString("src_path"));
+			config.setSrc_user(rs.getString("src_user"));
+			config.setTarget_tb(rs.getString("target_tb"));
+			config.setSrc_pass(rs.getString("src_pass"));
+			config.setFile_Mask(rs.getString("file_mask"));
+			config.setFile_type(rs.getString("file_type"));
+			config.setColumnList(rs.getString("columnList"));
+		}
+		ps.close();
+		return config;
+	}
 
 }
