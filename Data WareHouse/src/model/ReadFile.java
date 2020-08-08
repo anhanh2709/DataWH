@@ -33,41 +33,27 @@ public class ReadFile {
 		cdb = new ControlDatabase(this.config_db_name, this.table_name, this.target_db_name);
 	}
 
-//	Đọc từng dòng dữ liệu
 	private String readLines(String value, String delim) {
 		String values = "";
 
 //		tạo ra một lớp StringTokenizer dựa trên chuỗi chỉ định và dấu phân cách.
+//		Lớp java.util.StringTokenizer cho phép bạn phân tách một chuỗi thành các phần tử token của nó
 		StringTokenizer stoken = new StringTokenizer(value, delim);
-<<<<<<< HEAD
 //		countTokens: Trả về tổng số lượng của các stoken.
-=======
-//		countTokens: Trả về tổng số lượng của các token.
->>>>>>> d30a133289db428aa684aedaf38dbedf6f1a5adf
 		int countToken = stoken.countTokens();
 		String lines = "(";
 
 		for (int j = 0; j < countToken; j++) {
-//			next token: Trả về token tiếp theo khi duyệt đối tượng StringTokenizer
+//			nexttoken(): Trả về token tiếp theo khi duyệt đối tượng StringTokenizer
 			String token = stoken.nextToken();
-<<<<<<< HEAD
 //			nếu là cuối cùng thì ) + | không thì là dấu ,
 			lines += (j == countToken - 1) ? "'" + token.trim() + "')|" : "'" + token.trim() + "',";
-=======
-
-			lines += (j == countToken - 1) ? "'" + token.trim() + "')|" : "'" + token.trim() + "',";
-
->>>>>>> d30a133289db428aa684aedaf38dbedf6f1a5adf
 			values += lines;
 			lines = "";
 		}
 		return values;
 	}
 
-<<<<<<< HEAD
-//	đọc txt
-=======
->>>>>>> d30a133289db428aa684aedaf38dbedf6f1a5adf
 	public String readValuesTXT(File s_file, int count_field) {
 		if (!s_file.exists()) {
 			return null;
@@ -75,17 +61,6 @@ public class ReadFile {
 		String values = "";
 		String delim = "|";
 		try {
-<<<<<<< HEAD
-//			Đọc một dòng dữ liệu có trong file:
-			BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(s_file), "utf8")); //mở file để đọc
-			String line = bReader.readLine();
-//			nếu delim là "\t" thì trả về \t
-			if (line.indexOf("\t") != -1) {
-				delim = "\t";
-			}
-//			Kiểm tra có header hay không
-//			nếu là số thì đọc còn k phải số thì bỏ qua
-=======
 			// Đọc một dòng dữ liệu có trong file:
 //			BufferedReader đọc văn bản từ inputStream dựa trên các kí tự 
 //			readline đọc từng dòng
@@ -107,20 +82,23 @@ public class ReadFile {
 //			 không phải số nên là header -> bỏ qua line
 //			 Kiểm tra xem có phần header hay không
 //			tạo một matcher khớp với đầu vào đã cho với mẫu.
->>>>>>> d30a133289db428aa684aedaf38dbedf6f1a5adf
 			if (Pattern.matches(NUMBER_REGEX, line.split(delim)[0])) {
 				values += readLines(line + delim, delim);
 			}
-//			chạy dòng while ghi hết dữ liệu từng dòng đọc được lại vào values
 			while ((line = bReader.readLine()) != null) {
+				// line = 1|17130005|Đào Thị Kim|Anh|15-08-1999|DH17DTB|Công
+				// nghệ thông tin
+				// b|0123456789|17130005st@hcmuaf.edu.vn|Bến Tre|abc
+				// line + " " + delim = 1|17130005|Đào Thị
+				// Kim|Anh|15-08-1999|DH17DTB|Công nghệ
+				// thông tin b|0123456789|17130005st@hcmuaf.edu.vn|Bến Tre|abc |
+				// Nếu có field 11 thì dư khoảng trắng lên readLines() có
+				// trim(), còn 10 field
+				// thì fix lỗi out index
 				values += readLines(line + " " + delim, delim);
 			}
 			bReader.close();
-<<<<<<< HEAD
-//			trả giá trị từ đầu tới cuối
-=======
 //			subString in ra giá trị từ đầu tới cuối
->>>>>>> d30a133289db428aa684aedaf38dbedf6f1a5adf
 			return values.substring(0, values.length() - 1);
 		} catch (NoSuchElementException | IOException e) {
 			e.printStackTrace();
@@ -128,57 +106,25 @@ public class ReadFile {
 		}
 	}
 
-<<<<<<< HEAD
-//	đọc xlsx
-	public String readValuesXLSX(File s_file, int countField) {
-		String values = ""; //dữ liệu cuối cùng có được
-		String value = ""; //dữ liệu đọc từng dòng
-		String delim = "|";
-		try {
-			FileInputStream fileIn = new FileInputStream(s_file); //file truyền vào
-			XSSFWorkbook workBook = new XSSFWorkbook(fileIn); // file xlsx
-			XSSFSheet sheet = workBook.getSheetAt(0); //1 sheet trong file xlsx
-			Iterator<Row> rows = sheet.iterator(); // lấy từng hàng trong 1 sheet
-//			Kiểm tra xem có phần header hay không, nếu không có phần header
-//			Gọi rows.next, nếu có header thì vị trí dòng dữ liệu là 1.
-//			Nếu kiểm tra mà không có header thì phải set lại cái row bắt đầu
-//			ở vị trí 0, hổng ấy là bị sót dữ liệu dòng 1 nha.
-=======
 	public String readValuesXLSX(File s_file, int countField) {
 		String values = "";
 		String value = "";
 		String delim = "|";
 		try {
 			FileInputStream fileIn = new FileInputStream(s_file);
-			XSSFWorkbook workBook = new XSSFWorkbook(fileIn); //file xlsx
+			XSSFWorkbook workBook = new XSSFWorkbook(fileIn); // file xlsx
 			XSSFSheet sheet = workBook.getSheetAt(0);
 			Iterator<Row> rows = sheet.iterator();
 			// Kiểm tra xem có phần header hay không, nếu không có phần header
 			// Gọi rows.next, nếu có header thì vị trí dòng dữ liệu là 1.
 			// Nếu kiểm tra mà không có header thì phải set lại cái row bắt đầu
 			// ở vị trí 0, hổng ấy là bị sót dữ liệu dòng 1 nha.
->>>>>>> d30a133289db428aa684aedaf38dbedf6f1a5adf
 			if (rows.next().cellIterator().next().getCellType().equals(CellType.NUMERIC)) {
 				// iterator lấy danh sách
 				rows = sheet.iterator();
 			}
 			while (rows.hasNext()) { // co lay phan tu tiep theo khong
-<<<<<<< HEAD
 				Row row = rows.next(); // lay phan tu tiep theo
-//				 Kiểm tra coi cái số trường ở trong file excel có đúng với
-//				 số trường có trong cái bảng mình tạo sẵn ở trong table
-//				 staging không
-				if (row.getLastCellNum() < countField + 1 || row.getLastCellNum() > countField + 2) {
-					workBook.close();
-					return null;
-				}
-
-//				Bắt đầu lấy giá trị trong các ô ra:
-//				Iterator<Cell> cells = row.cellIterator();
-				for (int cn = 0; cn < countField; cn++) {
-//					tạo ô trống
-=======
-				Row row = rows.next(); //lay phan tu tiep theo
 				// Kiểm tra coi cái số trường ở trong file excel có đúng với
 				// số trường có trong cái bảng mình tạo sẵn ở trong table
 				// staging không
@@ -186,11 +132,11 @@ public class ReadFile {
 //					workBook.close();
 //					return null;
 //				}
-				// Bắt đầu lấy giá trị trong các ô ra:
+
+//				Bắt đầu lấy giá trị trong các ô ra:
 //				Iterator<Cell> cells = row.cellIterator();
 				for (int cn = 0; cn < countField; cn++) {
-					// Cell cell = cells.next();
->>>>>>> d30a133289db428aa684aedaf38dbedf6f1a5adf
+//					tạo ô trống
 					Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
 //					ép kiểu cho ô trống
 					CellType cellType = cell.getCellType();
@@ -206,7 +152,6 @@ public class ReadFile {
 					case STRING:
 						value += cell.getStringCellValue() + delim;
 						break;
-//						công thức trong excel
 					case FORMULA:
 						switch (cell.getCachedFormulaResultType()) {
 						case NUMERIC:
@@ -221,7 +166,6 @@ public class ReadFile {
 						}
 						break;
 					case BLANK:
-//						giá trị trống
 						value += " " + delim;
 						break;
 					default:
@@ -229,7 +173,7 @@ public class ReadFile {
 						if (cn < 2) {
 							value += (long) cell.getNumericCellValue() + delim;
 						} else
-//							giá trị trống
+							// còn lại là dạng chuỗi
 							value += " " + delim;
 						break;
 					}
