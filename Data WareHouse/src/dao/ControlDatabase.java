@@ -53,9 +53,12 @@ public class ControlDatabase {
 
 	public boolean tableExist(String table_name) throws ClassNotFoundException {
 		try {
+
 			DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
+//			lấy dữ liệu trong table
 			ResultSet tables = dbm.getTables(null, null, table_name, null);
 			try {
+//				nếu trong tables có dữ liệu thì table tồn tại
 				if (tables.next()) {
 					System.out.println(true);
 					return true;
@@ -74,14 +77,16 @@ public class ControlDatabase {
 	}
 
 	public boolean insertValues(String column_list, String values, String target_table) throws ClassNotFoundException {
+//		lấy các dòng dữ liệu cách nhau bởi dấu |
 		StringTokenizer stoken = new StringTokenizer(values, "|");
+//		Trả về true nếu còn nhiều token trong chuỗi
 		while (stoken.hasMoreElements()) {
 			String next = stoken.nextToken();
 			if (!next.equals("('')")) {
 				sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " + next;
 
 				try {
-					pst = DBConnection.ConnectControl().prepareStatement(sql);
+					pst = DBConnection.ConnectStaging().prepareStatement(sql);
 					pst.executeUpdate();
 					pst.close();
 				} catch (SQLException e) {
@@ -106,6 +111,7 @@ public class ControlDatabase {
 			pst.setString(3, file_status);
 			pst.setInt(4, Integer.parseInt(stagin_load_count));
 			pst.setString(5, timestamp);
+//			do là câu lệnh insert nên xài executeUpdate
 			pst.executeUpdate();
 			return true;
 		} catch (SQLException e) {
@@ -175,6 +181,18 @@ public class ControlDatabase {
 			}
 
 		}
+	}
+
+	public void truncateTable(Connection connection, String table_name) {
+		PreparedStatement statementTruncate;
+		try {
+			statementTruncate = connection.prepareStatement("TRUNCATE TABLE " + table_name);
+			statementTruncate.execute();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("TRUNCATED " + table_name);
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
