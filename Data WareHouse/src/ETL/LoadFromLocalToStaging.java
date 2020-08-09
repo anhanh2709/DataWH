@@ -90,9 +90,9 @@ public class LoadFromLocalToStaging {
 				return;
 			}
 
-//			lay list file trong log
+//			Lấy log
 			for (Log log : listlog) {
-//				lay ten file trong dir
+//				Lấy tên file trong dir
 				String file_name = file.getName();
 //				9. Kiểm tra file có trong log không
 				if (file_name.equals(log.getFile_name())) {
