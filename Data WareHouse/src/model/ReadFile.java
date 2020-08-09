@@ -90,10 +90,7 @@ public class ReadFile {
 			XSSFWorkbook workBook = new XSSFWorkbook(fileIn); // file xlsx
 			XSSFSheet sheet = workBook.getSheetAt(0);
 			Iterator<Row> rows = sheet.iterator();
-			// Kiểm tra xem có phần header hay không, nếu không có phần header
-			// Gọi rows.next, nếu có header thì vị trí dòng dữ liệu là 1.
-			// Nếu kiểm tra mà không có header thì phải set lại cái row bắt đầu
-			// ở vị trí 0, hổng ấy là bị sót dữ liệu dòng 1 nha.
+			// Kiểm tra xem có phần header hay không
 			if (rows.next().cellIterator().next().getCellType().equals(CellType.NUMERIC)) {
 //				lấy danh sách nhiều dòng rows
 				rows = sheet.iterator();
