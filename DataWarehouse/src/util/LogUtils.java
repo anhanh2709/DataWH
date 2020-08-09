@@ -169,18 +169,7 @@ public class LogUtils {
 			return rs.getString("file_name");
 		}
 	}
-	public static Config getConfigAutoRun() throws SQLException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		String sql = "Call control.getNextRunConFig(?)";
-		CallableStatement clstm = con.prepareCall(sql);
-		int config_id = 0;
-		clstm.registerOutParameter(1, Types.INTEGER);
-		clstm.execute();
-		config_id = clstm.getInt(1);
-		System.out.println(config_id);
-		Config config  = ConfigUtils.getConfigByID(config_id);
-		return config;
-	}
+	
 	public static boolean checkExistFileName(String name, int config_id) throws SQLException {
 		// TODO Auto-generated method stub
 		String sql = "select file_name from control.log where file_name = ? and config_id = ?";
@@ -198,17 +187,13 @@ public class LogUtils {
 		}
 		return false;
 	}
-	public static void main(String[] args) {
-		try {
-			getConfigAutoRun();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		Long millis = System.currentTimeMillis();
+//		timestamp thư viện của sql
+		Timestamp currentTS = new Timestamp(millis);
+		updateStateForAFile(1, "EXS",currentTS , 15, "17130044_sang_nhom8.txt");
 	}
+
 	
 
 	

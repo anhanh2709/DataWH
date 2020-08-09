@@ -1,9 +1,11 @@
 package util;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import configuration.Config;
 
@@ -63,6 +65,19 @@ public final class ConfigUtils {
 			config.setColumnList(rs.getString("columnList"));
 		}
 		ps.close();
+		return config;
+	}
+	public static Config getConfigAutoRun() throws SQLException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		String sql = "Call control.getNextRunConFig(?)";
+		
+		CallableStatement clstm = DBConnection.ConnectControl().prepareCall(sql);
+		int config_id = 0;
+		clstm.registerOutParameter(1, Types.INTEGER);
+		clstm.execute();
+		config_id = clstm.getInt(1);
+		System.out.println(config_id);
+		Config config  = ConfigUtils.getConfigByID(config_id);
 		return config;
 	}
 

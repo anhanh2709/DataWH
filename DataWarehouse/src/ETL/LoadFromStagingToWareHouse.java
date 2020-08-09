@@ -95,7 +95,7 @@ public class LoadFromStagingToWareHouse {
 				if(checkExisted(skey, warehouse_table, warehouse_naturalKey)) {
 					// kiểm tra dữ liệu về đối tượng có trùng khớp hoàn toàn hay không
 					// nếu có thì bỏ qua dòng record này
-					if(checkOverlap()) {
+					if(checkOverlap(dataFromStaging.getString("id"), warehouse_table)) {
 						// nếu dữ liêu về đối tượng trùng hoàn toàn
 						// thêm 1 dòng dữ liệu mới vói dũ liệu từ resultset 
 						insertNewRecord(dataFromStaging.getRow(), required_columns, warehouse_columns, warehouse_table);
@@ -219,7 +219,7 @@ public class LoadFromStagingToWareHouse {
 		Statement st = controlCon.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                 ResultSet.CONCUR_UPDATABLE);
 		dataFromStaging = st.executeQuery(selectFromStaging);
-		return ;
+		return;
 	}
 	private void updateOldRecord(String warehouse_table, String warehouse_naturalkey, String staging_naturalKey, Date dt_expired_date) 
 			throws ClassNotFoundException, SQLException {
@@ -282,8 +282,20 @@ public class LoadFromStagingToWareHouse {
 		}
 		return naturalKeys;
 	}
-	public boolean checkOverlap() {
-		return true;
+	public boolean checkOverlap(String stagingId,String warehouseTable) throws SQLException, ClassNotFoundException {
+			Connection con = DBConnection.ConnectControl();
+			String overlapProcedure = "{Call warehouse."+warehouseTable +"_Overlap(?,?)}";
+			CallableStatement cstmt = con.prepareCall(overlapProcedure);
+			int overlap = 0;
+			cstmt.setInt(1, Integer.parseInt(stagingId));
+			cstmt.registerOutParameter(2, Types.TINYINT);
+			cstmt.execute();
+			overlap = cstmt.getInt(2);
+			//con.close();
+			if(overlap == 1) 
+				return true;
+			else
+				return false;
 	}
 	public void loadDate_dim() {
 		String insertDateDim = "Insert into WAREHOUSE.Datedim(id, date_value) select col1, col2 from Staging.Datedim";
@@ -299,7 +311,6 @@ public class LoadFromStagingToWareHouse {
 		
 		
 	}
-//
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		LoadFromStagingToWareHouse load = new LoadFromStagingToWareHouse();
 //		load.loadDate_dim();

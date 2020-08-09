@@ -53,9 +53,12 @@ public class ControlDatabase {
 
 	public boolean tableExist(String table_name) throws ClassNotFoundException {
 		try {
+
 			DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
+//			lấy dữ liệu trong table
 			ResultSet tables = dbm.getTables(null, null, table_name, null);
 			try {
+//				nếu trong tables có dữ liệu thì table tồn tại
 				if (tables.next()) {
 					System.out.println(true);
 					return true;
@@ -73,26 +76,30 @@ public class ControlDatabase {
 		return false;
 	}
 
-	public boolean insertValues(String column_list, String values, String target_table) throws ClassNotFoundException {
+	public int insertValues(String column_list, String values, String target_table) throws ClassNotFoundException {
+		int stagingCount = 0;
+ //		lấy các dòng dữ liệu cách nhau bởi dấu |
 		StringTokenizer stoken = new StringTokenizer(values, "|");
+//		Trả về true nếu còn nhiều token trong chuỗi
 		while (stoken.hasMoreElements()) {
 			String next = stoken.nextToken();
-			if(!next.equals("('')")) {
-			sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " +  next ;
-			
-			try {
-				pst = DBConnection.ConnectControl().prepareStatement(sql);
-				pst.executeUpdate();
-				pst.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-				System.out.println(sql);
-				return false;
-			}
+			if (!next.equals("('')")) {
+				sql = "INSERT INTO STAGING." + target_table + "(" + column_list + ") VALUES " + next;
+
+				try {
+					pst = DBConnection.ConnectStaging().prepareStatement(sql);
+					pst.executeUpdate();
+					pst.close();
+					stagingCount ++;
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.println(sql);
+					return -1;
+				}
 			}
 		}
-		return true; 
-		
+		return stagingCount;
+
 	}
 
 	public boolean insertLog(String table, String file_status, int config_id, String timestamp,
@@ -106,6 +113,7 @@ public class ControlDatabase {
 			pst.setString(3, file_status);
 			pst.setInt(4, Integer.parseInt(stagin_load_count));
 			pst.setString(5, timestamp);
+//			do là câu lệnh insert nên xài executeUpdate
 			pst.executeUpdate();
 			return true;
 		} catch (SQLException e) {
@@ -123,14 +131,17 @@ public class ControlDatabase {
 
 		}
 	}
-	public boolean updateLog(int config_id, String file_name, String state, Date staging_timestamp) throws ClassNotFoundException {
+
+	public boolean updateLog(int config_id, String file_name, String state, Date staging_timestamp)
+			throws ClassNotFoundException {
 		Connection connection;
 		try {
 			connection = DBConnection.ConnectControl();
 			PreparedStatement ps1 = connection.prepareStatement("UPDATE log SET active = 0 WHERE file_name=?");
 			ps1.setString(1, file_name);
 			ps1.executeUpdate();
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO log (config_id, file_name, file_type, status, file_timestamp, active) value (?,?,?,?,?,1)");
+			PreparedStatement ps = connection.prepareStatement(
+					"INSERT INTO log (config_id, file_name, file_type, status, file_timestamp, active) value (?,?,?,?,?,1)");
 			ps.setInt(1, config_id);
 			ps.setString(2, file_name);
 			ps.setString(3, state);
@@ -146,13 +157,13 @@ public class ControlDatabase {
 
 	public boolean createTable(String table_name, String variables, String column_list) throws ClassNotFoundException {
 		System.out.println("create");
-		sql = "CREATE TABLE "+table_name+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
+		sql = "CREATE TABLE " + table_name + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
 		String[] vari = variables.split(",");
 		String[] col = column_list.split(",");
-		for(int i =0;i<vari.length;i++) {
-			sql+=col[i]+" "+vari[i]+ " NOT NULL,";
+		for (int i = 0; i < vari.length; i++) {
+			sql += col[i] + " " + vari[i] + " NOT NULL,";
 		}
-		sql = sql.substring(0,sql.length()-1)+")";
+		sql = sql.substring(0, sql.length() - 1) + ")";
 		System.out.println(sql);
 		try {
 			pst = DBConnection.ConnectStaging().prepareStatement(sql);
@@ -173,10 +184,22 @@ public class ControlDatabase {
 
 		}
 	}
+
+	public void truncateTable(Connection connection, String table_name) {
+		PreparedStatement statementTruncate;
+		try {
+			statementTruncate = connection.prepareStatement("TRUNCATE TABLE STAGING." + table_name);
+			statementTruncate.execute();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
-		ResultSet tables = dbm.getTables(null, null, "SinhVien", null);
-		while(tables.next()) {
+		ResultSet tables = dbm.getTables(null, null, "Student", null);
+		while (tables.next()) {
 			System.out.println("???");
 		}
 	}
