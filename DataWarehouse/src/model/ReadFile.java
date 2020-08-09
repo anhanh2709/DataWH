@@ -69,6 +69,7 @@ public class ReadFile {
 			if (Pattern.matches(NUMBER_REGEX, line.split(delim)[0])) {
 				values += readLines(line + delim, delim);
 			}
+//			đọc dữ liệu và xử lý null
 			while ((line = bReader.readLine()) != null) {
 				values += readLines(line + " " + delim, delim);
 			}
@@ -82,8 +83,8 @@ public class ReadFile {
 	}
 
 	public String readValuesXLSX(File s_file, int countField) {
-		String values = "";
-		String value = "";  
+		String values = ""; // dữ liệu cuối cùng có được
+		String value = "";  // dữ liệu từng dòng
 		String delim = "|";
 		try {
 			FileInputStream fileIn = new FileInputStream(s_file);

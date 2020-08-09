@@ -108,7 +108,7 @@ public class LoadFromLocalToStaging {
 						values = rf.readValuesXLSX(file, str.countTokens());
 					}
 					System.out.println(values);
-//						12. Kiểm tra dữ liệu
+//					12. Kiểm tra dữ liệu
 					if (values != null) {
 
 						String state;
