@@ -299,6 +299,7 @@ public class LoadFromStagingToWareHouse {
 		
 		
 	}
+//
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		LoadFromStagingToWareHouse load = new LoadFromStagingToWareHouse();
 //		load.loadDate_dim();
