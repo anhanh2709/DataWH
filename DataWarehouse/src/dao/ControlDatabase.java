@@ -80,7 +80,7 @@ public class ControlDatabase {
 		int stagingCount = 0;
  //		lấy các dòng dữ liệu cách nhau bởi dấu |
 		StringTokenizer stoken = new StringTokenizer(values, "|");
-//		Trả về true nếu còn nhiều token trong chuỗi
+//		nếu còn nhiều token trong chuỗi thì duyệt cho hết
 		while (stoken.hasMoreElements()) {
 			String next = stoken.nextToken();
 			if (!next.equals("('')")) {
@@ -158,7 +158,9 @@ public class ControlDatabase {
 	public boolean createTable(String table_name, String variables, String column_list) throws ClassNotFoundException {
 		System.out.println("create");
 		sql = "CREATE TABLE " + table_name + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,";
+//		lấy datatypes
 		String[] vari = variables.split(",");
+//		lấy columnList
 		String[] col = column_list.split(",");
 		for (int i = 0; i < vari.length; i++) {
 			sql += col[i] + " " + vari[i] + " NOT NULL,";
@@ -193,14 +195,6 @@ public class ControlDatabase {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		DatabaseMetaData dbm = util.DBConnection.ConnectStaging().getMetaData();
-		ResultSet tables = dbm.getTables(null, null, "Student", null);
-		while (tables.next()) {
-			System.out.println("???");
 		}
 	}
 }

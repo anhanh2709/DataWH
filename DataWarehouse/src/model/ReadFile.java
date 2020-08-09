@@ -90,10 +90,7 @@ public class ReadFile {
 			XSSFWorkbook workBook = new XSSFWorkbook(fileIn); // file xlsx
 			XSSFSheet sheet = workBook.getSheetAt(0);
 			Iterator<Row> rows = sheet.iterator();
-			// Kiểm tra xem có phần header hay không, nếu không có phần header
-			// Gọi rows.next, nếu có header thì vị trí dòng dữ liệu là 1.
-			// Nếu kiểm tra mà không có header thì phải set lại cái row bắt đầu
-			// ở vị trí 0, hổng ấy là bị sót dữ liệu dòng 1 nha.
+//			Kiểm tra xem có header hay không
 			if (rows.next().cellIterator().next().getCellType().equals(CellType.NUMERIC)) {
 //				lấy danh sách nhiều dòng rows
 				rows = sheet.iterator();
@@ -103,9 +100,9 @@ public class ReadFile {
 				Row row = rows.next();
 //				Bắt đầu lấy giá trị trong các ô ra:
 				for (int cn = 0; cn < countField; cn++) {
-//					tạo ô trống
+//					Lấy ô ra và xữ lí ô trống
 					Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-//					ép kiểu cho ô
+//					lấy kiểu dữ liệu của ô ra để đọc
 					CellType cellType = cell.getCellType();
 					switch (cellType) {
 					case NUMERIC:
@@ -136,11 +133,10 @@ public class ReadFile {
 						value += " " + delim;
 						break;
 					default:
-//						dòng bị trống thì bỏ qua
+//						dòng bị trống thì 2 ô đầu là số điền vào 2 số 0
 						if (cn < 2) {
 							value += (long) cell.getNumericCellValue() + delim;
 						} else
-
 							value += " " + delim;
 						break;
 					}

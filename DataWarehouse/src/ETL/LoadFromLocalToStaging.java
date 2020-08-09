@@ -97,9 +97,9 @@ public class LoadFromLocalToStaging {
 //				9. Kiểm tra file có trong log không
 				if (file_name.equals(log.getFile_name())) {
 					String values = "";
-//						10. Kiểm tra đuôi file xem là loại nào
+//					10. Kiểm tra đuôi file xem là loại nào
 					if (file.getPath().endsWith(".txt")) {
-//						11. Đọc file
+//					11. Đọc file
 						values = rf.readValuesTXT(file, str.countTokens());
 					}
 					if (file.getPath().endsWith(".csv")) {
@@ -122,24 +122,24 @@ public class LoadFromLocalToStaging {
 						
 
 						System.out.println("Extracting........");
-//							13. Ghi dữ liệu vào table
+//						13. Ghi dữ liệu vào table
 						int stagingCount = rf.writeDataToBD(columnList, target_tb, values);
 						if (stagingCount != -1) {
-//								Thông báo thành công
+//							Thông báo thành công
 							System.out.println("Extract success");
 							state = "EXS";
-//								Ghi log
+//							Ghi log
 							LogUtils.updateStateForAFile(config_id, state, currentTS, stagingCount,
 									file_name);
 
 						} else {
 							state = "EXF";
-//								Thông báo thất bại
+//							Thông báo thất bại
 							System.out.println("Extract Fail");
-//								Ghi log
+//							Ghi log
 							LogUtils.updateStateForAFile(config_id, state, currentTS, stagingCount,
 									file_name);
-//								Gửi mail
+//							Gửi mail
 							mailUtils.SendMail("kanh2709@gmail.com", "Load file từ local lên staging",
 									"Load"  + file_name + "  thất bại!!!");
 						}
@@ -156,26 +156,6 @@ public class LoadFromLocalToStaging {
 		}
 	}
 
-	/*
-	 * private int countLines(File file, String extention) throws
-	 * InvalidFormatException,
-	 * org.apache.poi.openxml4j.exceptions.InvalidFormatException { int result = 0;
-	 * XSSFWorkbook workBooks = null; try { if (extention.indexOf(".txt") != -1 ||
-	 * extention.indexOf(".csv") != -1) { BufferedReader bReader = new
-	 * BufferedReader(new InputStreamReader(new FileInputStream(file))); String
-	 * line; // đọc từng dòng while ((line = bReader.readLine()) != null) { if
-	 * (!line.trim().isEmpty()) { result++; } } bReader.close(); } else if
-	 * (extention.indexOf(".xlsx") != -1) { workBooks = new XSSFWorkbook(file);
-	 * XSSFSheet sheet = workBooks.getSheetAt(0); Iterator<Row> rows =
-	 * sheet.iterator(); rows.next(); while (rows.hasNext()) { rows.next();
-	 * result++; } return result; }
-	 * 
-	 * } catch (IOException |
-	 * org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
-	 * e.printStackTrace(); } finally { if (workBooks != null) { try {
-	 * workBooks.close(); } catch (IOException e) { // ghi lỗi e.printStackTrace();
-	 * } } } return result; }
-	 */
 	// chạy hết các file có state là EXF
 	public void reExtract() throws ClassNotFoundException, SQLException {
 		List<Log> listLog = LogUtils.getConfigByState("EXF");

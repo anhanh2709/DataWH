@@ -25,7 +25,7 @@ import java.sql.CallableStatement;
 
 
 import configuration.Config;
-import control.Log;
+import configuration.Log;
 import mail.mailUtils;
 import util.ConfigUtils;
 import util.DBConnection;
