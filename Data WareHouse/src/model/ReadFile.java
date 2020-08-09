@@ -36,15 +36,11 @@ public class ReadFile {
 	private String readLines(String value, String delim) {
 		String values = "";
 
-//		tạo ra một lớp StringTokenizer dựa trên chuỗi chỉ định và dấu phân cách.
-//		Lớp java.util.StringTokenizer cho phép bạn phân tách một chuỗi thành các phần tử token của nó
 		StringTokenizer stoken = new StringTokenizer(value, delim);
-//		countTokens: Trả về tổng số lượng của các stoken.
 		int countToken = stoken.countTokens();
 		String lines = "(";
-
+//		duyệt hết số stoken cắt ra 
 		for (int j = 0; j < countToken; j++) {
-//			nexttoken(): Trả về token tiếp theo khi duyệt đối tượng StringTokenizer
 			String token = stoken.nextToken();
 //			nếu là cuối cùng thì ) + | không thì là dấu ,
 			lines += (j == countToken - 1) ? "'" + token.trim() + "')|" : "'" + token.trim() + "',";
@@ -61,44 +57,23 @@ public class ReadFile {
 		String values = "";
 		String delim = "|";
 		try {
-			// Đọc một dòng dữ liệu có trong file:
-//			BufferedReader đọc văn bản từ inputStream dựa trên các kí tự 
-//			readline đọc từng dòng
-//			FileInputStream đọc file từ các byte từ file input
-//			InputStreamReader đọc kí tự
+//			Đọc một dòng dữ liệu có trong file:
 			BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(s_file), "utf8"));
 			String line = bReader.readLine();
-//			indexOf trả về kí tự đã cho là "\t" 
 			if (line.indexOf("\t") != -1) {
 				delim = "\t";
 			}
-			// Kiểm tra xem tổng số field trong file có đúng format hay không
-			// (11 trường)
-//			if (new StringTokenizer(line, delim).countTokens() != (count_field + 1)) {
-//				bReader.close();
-//				return null;
-//			}
-//			 STT|Mã sinh viên|Họ lót|Tên|...-> line.split(delim)[0]="STT"
 //			 không phải số nên là header -> bỏ qua line
 //			 Kiểm tra xem có phần header hay không
-//			tạo một matcher khớp với đầu vào đã cho với mẫu.
+
 			if (Pattern.matches(NUMBER_REGEX, line.split(delim)[0])) {
 				values += readLines(line + delim, delim);
 			}
 			while ((line = bReader.readLine()) != null) {
-				// line = 1|17130005|Đào Thị Kim|Anh|15-08-1999|DH17DTB|Công
-				// nghệ thông tin
-				// b|0123456789|17130005st@hcmuaf.edu.vn|Bến Tre|abc
-				// line + " " + delim = 1|17130005|Đào Thị
-				// Kim|Anh|15-08-1999|DH17DTB|Công nghệ
-				// thông tin b|0123456789|17130005st@hcmuaf.edu.vn|Bến Tre|abc |
-				// Nếu có field 11 thì dư khoảng trắng lên readLines() có
-				// trim(), còn 10 field
-				// thì fix lỗi out index
 				values += readLines(line + " " + delim, delim);
 			}
 			bReader.close();
-//			subString in ra giá trị từ đầu tới cuối
+//			subString cắt ra giá trị từ đầu tới cuối
 			return values.substring(0, values.length() - 1);
 		} catch (NoSuchElementException | IOException e) {
 			e.printStackTrace();
@@ -108,7 +83,7 @@ public class ReadFile {
 
 	public String readValuesXLSX(File s_file, int countField) {
 		String values = "";
-		String value = "";
+		String value = "";  
 		String delim = "|";
 		try {
 			FileInputStream fileIn = new FileInputStream(s_file);
@@ -120,25 +95,17 @@ public class ReadFile {
 			// Nếu kiểm tra mà không có header thì phải set lại cái row bắt đầu
 			// ở vị trí 0, hổng ấy là bị sót dữ liệu dòng 1 nha.
 			if (rows.next().cellIterator().next().getCellType().equals(CellType.NUMERIC)) {
-				// iterator lấy danh sách
+//				lấy danh sách nhiều dòng rows
 				rows = sheet.iterator();
 			}
-			while (rows.hasNext()) { // co lay phan tu tiep theo khong
-				Row row = rows.next(); // lay phan tu tiep theo
-				// Kiểm tra coi cái số trường ở trong file excel có đúng với
-				// số trường có trong cái bảng mình tạo sẵn ở trong table
-				// staging không
-//				if (row.getLastCellNum() < countField + 1 || row.getLastCellNum() > countField + 2) {
-//					workBook.close();
-//					return null;
-//				}
-
+		
+			while (rows.hasNext()) { 
+				Row row = rows.next();
 //				Bắt đầu lấy giá trị trong các ô ra:
-//				Iterator<Cell> cells = row.cellIterator();
 				for (int cn = 0; cn < countField; cn++) {
 //					tạo ô trống
 					Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-//					ép kiểu cho ô trống
+//					ép kiểu cho ô
 					CellType cellType = cell.getCellType();
 					switch (cellType) {
 					case NUMERIC:
@@ -173,7 +140,7 @@ public class ReadFile {
 						if (cn < 2) {
 							value += (long) cell.getNumericCellValue() + delim;
 						} else
-							// còn lại là dạng chuỗi
+
 							value += " " + delim;
 						break;
 					}
