@@ -154,20 +154,19 @@ public class LogUtils {
 		ps.execute();
 		ps.close();
 	}
-	public static String getFirstFileInLog(int i, String state) throws ClassNotFoundException, SQLException {
-		String sql = "select file_name from control.log where config_id = ? and state = ? limit 1";
+	public static List<String> getFilesInLog(int i, String state) throws ClassNotFoundException, SQLException {
+		String sql = "select file_name from control.log where config_id = ? and state = ?";
 		Connection con = DBConnection.ConnectControl();
 		PreparedStatement ps = con.prepareStatement(sql);
+		List<String> fileNames = new ArrayList<String>();
 		ps.setInt(1, i);
 		ps.setString(2, state);
 		ResultSet rs = ps.executeQuery();
 		if(!rs.next()) {
 			System.out.println("Khong co file nao du dieu kien extract");
-			return "";
+			fileNames.add(rs.getString("file_name"));
 		}
-		else {
-			return rs.getString("file_name");
-		}
+		return fileNames;
 	}
 	
 	public static boolean checkExistFileName(String name, int config_id) throws SQLException {
