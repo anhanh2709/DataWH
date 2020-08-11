@@ -32,6 +32,7 @@ import util.LogUtils;
 public class LoadFromSources {
 	static {
 		try {
+			// 2. load thư viên chilkat
 			System.load("D:\\DataWareHouse\\chilkat.dll"); //copy file chilkat.dll vao thu muc project
 		} catch (UnsatisfiedLinkError e) {
 			System.err.println("Native code library failed to load.\n" + e);
@@ -44,6 +45,7 @@ public class LoadFromSources {
 		CkGlobal ck = new CkGlobal();
 		ck.UnlockBundle("DownLoad");
 		ssh.UnlockComponent("Download");
+		//5. lấy url là host và kết nối tới url đó
 		String hostname = config.getSrc_url();
 		int port = 2227;
 		boolean success = ssh.Connect(hostname, port);
@@ -52,6 +54,7 @@ public class LoadFromSources {
 			return;
 		}
 		ssh.put_IdleTimeoutMs(5000);
+		//6. tự động lấy username và password trong config
 		success = ssh.AuthenticatePw(config.getSrc_user(), config.getSrc_pass());
 		// kiểm tra kết nối nếu có lỗi dừng download
 		if (success != true) {
@@ -59,20 +62,20 @@ public class LoadFromSources {
 			return;
 		}
 		CkScp scp = new CkScp();
-		// sử dụng kết nối ssh
+		// 7. sử dụng kết nối ssh
 		success = scp.UseSsh(ssh);
 		// kiểm tra kết nối sau khi kết nối ssh
 		if (success != true) {
 			System.out.println(scp.lastErrorText());
 			return;
 		}
-		// lấy file_mask từ trong config các file trên host phải khớp với file_mask định sẵn mới được download về
+		// 8.lấy file_mask từ trong config các file trên host phải khớp với file_mask định sẵn mới được download về
 		scp.put_SyncMustMatch(config.getFile_Mask());//down tat ca cac file bat dau bang sinhvien
-		// lấy từ config ra remotePath : đường dẫn của các file trên host
+		// 9.lấy từ config ra remotePath : đường dẫn của các file trên host
 		String remotePath = config.getSrc_path(); // /volume1/ECEP/song.nguyen/DW_2020/data
-		// lấy từ config ra đường dẫn trên local mà ta muốn down file về
+		// 9.lấy từ config ra đường dẫn trên local mà ta muốn down file về
 		String localPath = config.getImport_dir(); //thu muc muon down file ve
-		// thuc hiện down load từ remote path về local path
+		// 10.thuc hiện down load từ remote path về local path
 		success = scp.SyncTreeDownload(remotePath, localPath, 2, false);
 		// kiểm tra down load 
 		if (success != true) {
@@ -111,6 +114,7 @@ public class LoadFromSources {
 		}
 		
 	}
+	
 	public  List<File> listFile(String dir) {
 		 File directoryPath = new File(dir);
 		 List<File> listFile = new ArrayList<File>();
@@ -129,21 +133,21 @@ public class LoadFromSources {
 			// neu khong se xu ly
 			if(!checkExists(f.getName(),config_id)) {
 			if(checkSumCompare(f, checkSum)) {
-				// copy file tu import => success directory 
+				// 12.1 copy file tu import => success directory 
 				copyFileUsingStream(f.getAbsolutePath(), new File(sucDir + File.separator + f.getName()));
-				// ghi log cho file moi duoc download, đặt trạng thái là ER (extract ready)
+				// 12.1.2 ghi log cho file moi duoc download, đặt trạng thái là ER (extract ready)
 				addDownloadLog(config_id,f.getName(), "ER");
-				// gửi mail thông báo download thành công
+				// 12.1.3 gửi mail thông báo download thành công
 				mailUtils.SendMail("", "download File success", "Downloading file: "+ f.getName() + "process has been successed");
 				// xoa file trong import
 				f.delete();
 			}
 			else {
-				// copy file từ import => error directory 
+				// 12.2copy file từ import => error directory 
 				copyFileUsingStream(f.getAbsolutePath(), new File(errDir + File.separator + f.getName()));
-				// ghi log cho file download không thành công đặt trạng thái là F(fail)
+				// 12.2.2ghi log cho file download không thành công đặt trạng thái là F(fail)
 				addDownloadLog(config_id,f.getName(), "F");
-				// gửi mail thông báo download thất bại
+				// 12.2.3gửi mail thông báo download thất bại
 				mailUtils.SendMail("", "Download File fail", "Downloading file: "+ f.getName() + "process has been fail");
 				// Xóa file trong import
 				f.delete();
@@ -190,8 +194,9 @@ public class LoadFromSources {
 				nonValueDate, -1, -1);
 	}
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		// lay config co ten tuong ung trong database control, table  config thong qua lop configUtils
+		// 3. lay config co ten tuong ung trong database control, table  config thong qua lop configUtils
 		Config config = ConfigUtils.getConfig("f_sinhvien");
+		//4. gọi phương thức download
 		LoadFromSources LFS = new LoadFromSources();
 		LFS.DownLoad(config);
 	}
